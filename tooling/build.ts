@@ -6,9 +6,9 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const result = await build({
 	absWorkingDir: root,
 	entryPoints: [
-		"src/application-cli/kaktus.ts",
+		"src/application-cli/taxy.ts",
 	],
-	outfile: "dist/kaktus.mjs",
+	outfile: "dist/taxy.mjs",
 	bundle: true,
 	platform: "node",
 	format: "esm",

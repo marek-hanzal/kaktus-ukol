@@ -35,7 +35,7 @@ module.exports = {
 			from: {
 				orphan: true,
 				pathNot: [
-					"^src/application-cli/kaktus[.]ts$",
+					"^src/application-cli/taxy[.]ts$",
 					"^tooling/build[.]ts$",
 					"[.]d[.]ts$",
 				],
@@ -84,7 +84,7 @@ module.exports = {
 			severity: "error",
 			from: {
 				path: "^src/",
-				pathNot: "^src/application-cli/kaktus[.]ts$",
+				pathNot: "^src/application-cli/taxy[.]ts$",
 			},
 			to: {
 				path: "^node_modules/@effect/platform-node/",

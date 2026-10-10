@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { Effect, Layer } from "effect";
@@ -9,18 +10,20 @@ import { FileProcessingLogLayer } from "~/processing-log/layer/FileProcessingLog
 
 import { CompareRecordCommand } from "./command/CompareRecordCommand";
 import { FileAuditLogLayer } from "~/audit-log/layer/FileAuditLogLayer";
+import { KaktusCommand } from "./command/KaktusCommand";
 
-const KaktusCommand = Command.make("kaktus").pipe(
+const TaxyCommand = Command.make("taxy").pipe(
 	Command.withSubcommands([
 		SchemaCommand,
 		ImportIntermediateCommand,
 		CompareRecordCommand,
+		KaktusCommand,
 	]),
 	Command.withDescription("Local TAXY/Kaktus connector."),
 );
 
 // The only execution root. Domain code retains its exact service requirements.
-Command.run(KaktusCommand, {
+Command.run(TaxyCommand, {
 	version,
 }).pipe(
 	Effect.provide(
