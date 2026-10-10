@@ -108,7 +108,7 @@ module.exports = {
 				path: "^src/import-record/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|example|dbf|accounting-record|record-import|record-export|record-comparison|ndjson)/",
+				path: "^src/(?:kaktus|taxy|example|dbf|accounting-record|record-import|record-export|record-comparison|ndjson|kaktus-write)/",
 			},
 		},
 		{
@@ -118,7 +118,7 @@ module.exports = {
 				path: "^src/accounting-record/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|example|dbf|record-import|record-export|record-comparison|ndjson)/",
+				path: "^src/(?:kaktus|taxy|example|dbf|record-import|record-export|record-comparison|ndjson|kaktus-write)/",
 			},
 		},
 		{
@@ -128,7 +128,7 @@ module.exports = {
 				path: "^src/ndjson/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|example|record-import|record-export|accounting-record|import-record)/",
+				path: "^src/(?:kaktus|taxy|example|record-import|record-export|accounting-record|import-record|kaktus-write)/",
 			},
 		},
 		{
@@ -138,7 +138,7 @@ module.exports = {
 				path: "^src/record-export/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|example|dbf|record-import|record-comparison|ndjson)/",
+				path: "^src/(?:kaktus|taxy|example|dbf|record-import|record-comparison|ndjson|kaktus-write)/",
 			},
 		},
 		{
@@ -159,7 +159,7 @@ module.exports = {
 				path: "^src/record-comparison/",
 			},
 			to: {
-				path: "^src/(?:dbf|kaktus|taxy|example)/",
+				path: "^src/(?:dbf|kaktus|taxy|example|kaktus-write)/",
 			},
 		},
 		{
@@ -169,7 +169,7 @@ module.exports = {
 				path: "^src/audit-log/",
 			},
 			to: {
-				path: "^src/(?:accounting-record|import-record|record-import|record-export|record-comparison|dbf|kaktus|taxy|example|ndjson)/",
+				path: "^src/(?:accounting-record|import-record|record-import|record-export|record-comparison|dbf|kaktus|taxy|example|ndjson|kaktus-write)/",
 			},
 		},
 		{
@@ -179,7 +179,7 @@ module.exports = {
 				path: "^src/file-boundary/",
 			},
 			to: {
-				path: "^src/(?:accounting-record|import-record|record-import|record-export|record-comparison|dbf|kaktus|taxy|example|ndjson)/",
+				path: "^src/(?:accounting-record|import-record|record-import|record-export|record-comparison|dbf|kaktus|taxy|example|ndjson|kaktus-write)/",
 			},
 		},
 		{
@@ -191,6 +191,26 @@ module.exports = {
 			to: {
 				path: "^src/",
 				pathNot: "^src/(?:file-append|text-output)/",
+			},
+		},
+		{
+			name: "target-writer-does-not-import-source-adapters",
+			severity: "error",
+			from: {
+				path: "^src/kaktus-write/",
+			},
+			to: {
+				path: "^src/(?:example|taxy)/",
+			},
+		},
+		{
+			name: "source-adapters-do-not-import-write-orchestration",
+			severity: "error",
+			from: {
+				path: "^src/(?:kaktus|example|record-import|record-comparison)/",
+			},
+			to: {
+				path: "^src/kaktus-write/",
 			},
 		},
 		{

@@ -4,9 +4,9 @@ The supplied simulator's lock-related implementation was inspected. `zamknout` s
 
 ```text
 node kaktus/kaktus.cjs zamknout 0001
-node dist/taxy-cli.mjs kaktus convert kaktus/DATA --actor developer --output .out/kaktus.intermediate.jsonl
+taxy-cli kaktus convert kaktus/DATA --actor developer --output .out/kaktus.intermediate.jsonl
 node kaktus/kaktus.cjs odemknout 0001
-node dist/taxy-cli.mjs kaktus convert kaktus/DATA --actor developer --output .out/kaktus.intermediate.jsonl
+taxy-cli kaktus convert kaktus/DATA --actor developer --output .out/kaktus.intermediate.jsonl
 ```
 
 `zamknout` writes a nonempty UTF-8 `DATA/0001/FIRMA.LCK` containing the simulated user and workstation. `odemknout` removes the marker. The simulator's XML import refuses a nonempty marker with exit code **3**, before writing records, an import log or a response. Its lock/unlock commands do not implement ownership checks or coordinate with an import already running.

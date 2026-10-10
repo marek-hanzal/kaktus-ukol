@@ -5,12 +5,12 @@ import { DecimalTextSchema } from "~/accounting-value/schema/DecimalTextSchema";
 import { KaktusAmountSchema } from "./KaktusAmountSchema";
 import { KaktusTextSchema } from "./KaktusTextSchema";
 import { KaktusSupplierSchema } from "./KaktusSupplierSchema";
-import { KaktusProvenanceSchema } from "./KaktusProvenanceSchema";
+import { KaktusInvoiceProvenanceSchema } from "./KaktusInvoiceProvenanceSchema";
 
 /** Exact public XML invoice projection, independently validated before encoding. */
 export const KaktusInvoiceSchema = z
 	.object({
-		provenance: KaktusProvenanceSchema,
+		provenance: KaktusInvoiceProvenanceSchema,
 		CisloDodavatele: KaktusTextSchema.min(1).max(20),
 		VarSymbol: KaktusTextSchema.max(10),
 		Dodavatel: KaktusSupplierSchema,
@@ -25,8 +25,8 @@ export const KaktusInvoiceSchema = z
 		Celkem: KaktusAmountSchema,
 		Mena: CurrencySchema,
 		Kurz: DecimalTextSchema.regex(
-			/^\d{1,5}(?:\.\d{1,4})?$/,
-			"Exchange rate must fit N(10,4)",
+			/^\d{1,4}(?:\.\d{1,4})?$/,
+			"Kaktus accepts at most four integer and four fractional rate digits",
 		).nullable(),
 		Text: KaktusTextSchema.max(50),
 		Poznamka: KaktusTextSchema.max(60),

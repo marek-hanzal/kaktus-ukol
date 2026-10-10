@@ -25,6 +25,7 @@
 		"@effect/platform-node": "4.0.2",
 		"effect": "4.0.2",
 		"iconv-lite": "0.7.3",
+		"saxes": "6.0.0",
 		"ts-pattern": "5.9.0",
 		"zod": "4.6.5"
 	},

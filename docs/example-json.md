@@ -1,9 +1,9 @@
 # Example JSON conversion
 
 ```text
-node dist/taxy-cli.mjs example convert taxy --actor developer --output .out/example.ndjson
-node dist/taxy-cli.mjs import-intermediate .out/example.ndjson --actor developer --output .out/replayed.ndjson
-node dist/taxy-cli.mjs schema kaktus-meta --output .out/kaktus-meta.schema.json
+taxy-cli example convert taxy --actor developer --output .out/example.ndjson
+taxy-cli import-intermediate .out/example.ndjson --actor developer --output .out/replayed.ndjson
+taxy-cli schema kaktus-meta --output .out/kaktus-meta.schema.json
 ```
 
 `example` names the source adapter. The import/export language remains `intermediate` NDJSON.

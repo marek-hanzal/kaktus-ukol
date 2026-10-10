@@ -6,7 +6,7 @@ export const OperationSchema = z
 		actor: ActorSchema,
 		bestEffort: z.boolean().optional(),
 		action: ActionEnumSchema,
-		inputs: z.array(z.string().min(1).max(4096)).min(1).max(2),
+		inputs: z.array(z.string().min(1).max(4096)).min(1).max(3),
 		output: z.string().min(1).max(4096),
 	})
 	.strict()

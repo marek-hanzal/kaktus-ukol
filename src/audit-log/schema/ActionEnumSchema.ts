@@ -5,6 +5,7 @@ export const ActionEnumSchema = z.enum([
 	"read_example",
 	"compare_record",
 	"export_kaktus",
+	"write_kaktus",
 ]);
 export type ActionEnumSchema = typeof ActionEnumSchema;
 export namespace ActionEnumSchema {

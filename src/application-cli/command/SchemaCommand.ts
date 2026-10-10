@@ -19,6 +19,8 @@ import { publishFileFx } from "~/file-publication/fx/publishFileFx";
 
 import { DifferenceSchema } from "~/record-comparison/schema/DifferenceSchema";
 import { EntrySchema as AuditEntrySchema } from "~/audit-log/schema/EntrySchema";
+import { OutcomeSchema } from "~/kaktus-write/schema/OutcomeSchema";
+import { WriteSummarySchema } from "~/kaktus-write/schema/WriteSummarySchema";
 import { KaktusMetaSchema } from "~/import-record/schema/KaktusMetaSchema";
 
 const runSchemaCommandFx = Effect.fn("runSchemaCommandFx")(function* ({
@@ -51,6 +53,14 @@ export const SchemaCommand = Command.make(
 	"schema",
 	{
 		schema: Argument.ChoiceWithValue("contract", [
+			[
+				"write-outcome",
+				OutcomeSchema,
+			],
+			[
+				"write-summary",
+				WriteSummarySchema,
+			],
 			[
 				"kaktus-meta",
 				KaktusMetaSchema,
