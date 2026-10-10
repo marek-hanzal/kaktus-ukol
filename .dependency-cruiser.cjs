@@ -102,6 +102,36 @@ module.exports = {
 			},
 		},
 		{
+			name: "intermediate-contracts-stay-source-independent",
+			severity: "error",
+			from: {
+				path: "^src/import-record/",
+			},
+			to: {
+				path: "^src/(?:kaktus|taxy|accounting-record|record-import|ndjson)/",
+			},
+		},
+		{
+			name: "accounting-domain-does-not-import-adapters",
+			severity: "error",
+			from: {
+				path: "^src/accounting-record/",
+			},
+			to: {
+				path: "^src/(?:kaktus|taxy|record-import|ndjson)/",
+			},
+		},
+		{
+			name: "ndjson-does-not-import-accounting-domains",
+			severity: "error",
+			from: {
+				path: "^src/ndjson/",
+			},
+			to: {
+				path: "^src/(?:kaktus|taxy|record-import|accounting-record|import-record)/",
+			},
+		},
+		{
 			name: "schemas-do-not-import-behavior",
 			severity: "error",
 			from: {
@@ -119,7 +149,7 @@ module.exports = {
 				path: "^src/[^/]+/error/",
 			},
 			to: {
-				path: "^src/[^/]+/(?:fx|layer|service|command)/",
+				path: "^src/[^/]+/(?:fx|layer|service|command|stream)/",
 			},
 		},
 		{
@@ -129,7 +159,7 @@ module.exports = {
 				path: "^src/[^/]+/service/",
 			},
 			to: {
-				path: "^src/[^/]+/(?:fx|layer|command)/",
+				path: "^src/[^/]+/(?:fx|layer|command|stream)/",
 				dependencyTypesNot: [
 					"type-only",
 				],
@@ -142,7 +172,7 @@ module.exports = {
 				path: "^src/[^/]+/fn/",
 			},
 			to: {
-				path: "^src/[^/]+/(?:fx|layer|service|command)/",
+				path: "^src/[^/]+/(?:fx|layer|service|command|stream)/",
 				dependencyTypesNot: [
 					"type-only",
 				],

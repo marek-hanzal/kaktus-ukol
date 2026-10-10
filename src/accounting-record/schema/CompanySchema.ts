@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { CompanyRegistrationNumberSchema } from "~/accounting-value/schema/CompanyRegistrationNumberSchema";
-import { CompanyIdSchema } from "./CompanyIdSchema";
-/** Normalized Kaktus company; filesystem containment is checked by the reader. */
+import { IdSchema } from "~/accounting-value/schema/IdSchema";
+/** Normalized accounting company; folder is source metadata, never a trusted filesystem path. */
 export const CompanySchema = z
 	.object({
-		id: CompanyIdSchema,
+		id: IdSchema,
 		name: z.string().min(1),
 		registrationNumber: CompanyRegistrationNumberSchema,
 		taxNumber: z.string().nullable(),
@@ -13,8 +13,9 @@ export const CompanySchema = z
 	})
 	.strict()
 	.meta({
-		id: "kaktus.CompanySchema",
-		description: "Normalized Kaktus company; filesystem containment is checked by the reader.",
+		id: "accounting-record.CompanySchema",
+		description:
+			"Normalized accounting company; folder is source metadata, never a trusted filesystem path.",
 	});
 export type CompanySchema = typeof CompanySchema;
 export namespace CompanySchema {

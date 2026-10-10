@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { DecimalSchema } from "~/accounting-value/schema/DecimalSchema";
-/** Lossless Kaktus VAT totals for one invoice. */
+/** Lossless VAT totals for one invoice. */
 export const VatTotalsSchema = z
 	.object({
 		base0: DecimalSchema,
@@ -11,8 +11,8 @@ export const VatTotalsSchema = z
 	})
 	.strict()
 	.meta({
-		id: "kaktus.VatTotalsSchema",
-		description: "Lossless Kaktus VAT totals for one invoice.",
+		id: "accounting-record.VatTotalsSchema",
+		description: "Lossless VAT totals for one invoice.",
 	});
 export type VatTotalsSchema = typeof VatTotalsSchema;
 export namespace VatTotalsSchema {

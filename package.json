@@ -19,6 +19,7 @@
 	"dependencies": {
 		"@effect/platform-node": "4.0.2",
 		"effect": "4.0.2",
+		"ts-pattern": "5.9.0",
 		"zod": "4.6.5"
 	},
 	"overrides": {
@@ -27,11 +28,11 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.5.14",
 		"@types/node": "24.19.0",
-		"esbuild": "0.28.1",
-		"tsx": "4.23.15",
-		"typescript": "npm:@typescript/typescript6@6.0.2",
 		"dependency-cruiser": "18.4.0",
-		"jscpd": "5.3.3"
+		"esbuild": "0.28.1",
+		"jscpd": "5.3.3",
+		"tsx": "4.23.15",
+		"typescript": "npm:@typescript/typescript6@6.0.2"
 	},
 	"allowScripts": {
 		"esbuild": true

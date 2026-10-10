@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { CompanyRegistrationNumberSchema } from "~/accounting-value/schema/CompanyRegistrationNumberSchema";
-import { CompanyIdSchema } from "./CompanyIdSchema";
-/** Normalized company-scoped address record; numeric DBF IČO must be restored to eight-digit text. */
+import { IdSchema } from "~/accounting-value/schema/IdSchema";
+/** Normalized company-scoped supplier. */
 export const SupplierSchema = z
 	.object({
-		companyId: CompanyIdSchema,
+		companyId: IdSchema,
 		id: z.int().nonnegative(),
-		name: z.string(),
+		name: z.string().min(1),
 		registrationNumber: CompanyRegistrationNumberSchema.nullable(),
 		taxNumber: z.string().nullable(),
 		street: z.string(),
@@ -18,9 +18,8 @@ export const SupplierSchema = z
 	})
 	.strict()
 	.meta({
-		id: "kaktus.SupplierSchema",
-		description:
-			"Normalized company-scoped address record; numeric DBF IČO must be restored to eight-digit text.",
+		id: "accounting-record.SupplierSchema",
+		description: "Normalized company-scoped supplier.",
 	});
 export type SupplierSchema = typeof SupplierSchema;
 export namespace SupplierSchema {

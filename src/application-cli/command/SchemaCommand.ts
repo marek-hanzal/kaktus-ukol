@@ -7,9 +7,13 @@ import { ImportOfficeSchema } from "~/taxy/schema/ImportOfficeSchema";
 import { ImportClientSchema } from "~/taxy/schema/ImportClientSchema";
 import { OfficeSchema } from "~/taxy/schema/OfficeSchema";
 import { ClientSchema } from "~/taxy/schema/ClientSchema";
-import { CompanySchema } from "~/kaktus/schema/CompanySchema";
-import { SupplierSchema } from "~/kaktus/schema/SupplierSchema";
-import { InvoiceSchema as KaktusInvoiceSchema } from "~/kaktus/schema/InvoiceSchema";
+import { CompanySchema } from "~/accounting-record/schema/CompanySchema";
+import { SupplierSchema } from "~/accounting-record/schema/SupplierSchema";
+import { InvoiceSchema as AccountingInvoiceSchema } from "~/accounting-record/schema/InvoiceSchema";
+import { RecordSchema } from "~/accounting-record/schema/RecordSchema";
+import { IntermediateRecordSchema } from "~/import-record/schema/IntermediateRecordSchema";
+import { ProblemSchema } from "~/record-validation/schema/ProblemSchema";
+import { ImportSummarySchema } from "~/record-import/schema/ImportSummarySchema";
 import { publishFileFx } from "~/file-publication/fx/publishFileFx";
 
 const runSchemaCommandFx = Effect.fn("runSchemaCommandFx")(function* ({
@@ -66,16 +70,32 @@ export const SchemaCommand = Command.make(
 				ClientSchema,
 			],
 			[
-				"kaktus-company",
+				"accounting-company",
 				CompanySchema,
 			],
 			[
-				"kaktus-supplier",
+				"accounting-supplier",
 				SupplierSchema,
 			],
 			[
-				"kaktus-invoice",
-				KaktusInvoiceSchema,
+				"accounting-invoice",
+				AccountingInvoiceSchema,
+			],
+			[
+				"intermediate-record",
+				IntermediateRecordSchema,
+			],
+			[
+				"accounting-record",
+				RecordSchema,
+			],
+			[
+				"validation-problem",
+				ProblemSchema,
+			],
+			[
+				"import-summary",
+				ImportSummarySchema,
 			],
 		]),
 		output: Flag.String("output").pipe(
