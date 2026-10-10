@@ -1,12 +1,14 @@
 import { z } from "zod";
 import { ActorSchema } from "~/audit-log/schema/ActorSchema";
 import { FormatEnumSchema } from "~/record-export/schema/FormatEnumSchema";
+import { BestEffortSchema } from "~/record-validation/schema/BestEffortSchema";
 
 /** One streamed intermediate import with an atomically published validated output. */
 export const ImportOptionsSchema = z
 	.object({
 		input: z.string().min(1),
 		actor: ActorSchema,
+		bestEffort: BestEffortSchema,
 		output: z.string().min(1),
 		outputFormat: FormatEnumSchema.default(FormatEnumSchema.enum.intermediate),
 		maxOutputRecordBytes: z

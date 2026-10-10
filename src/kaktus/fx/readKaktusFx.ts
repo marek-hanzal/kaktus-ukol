@@ -5,6 +5,7 @@ import { checkDataPathsFx } from "~/file-boundary/fx/checkDataPathsFx";
 import { importRecordsFx } from "~/record-import/fx/importRecordsFx";
 import { FormatEnumSchema } from "~/record-export/schema/FormatEnumSchema";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
+import { formatBatchSummaryFn } from "~/record-validation/fn/formatBatchSummaryFn";
 import { ReadOptionsSchema } from "../schema/ReadOptionsSchema";
 import { readKaktusStream } from "../stream/readKaktusStream";
 
@@ -24,6 +25,7 @@ export const readKaktusFx = Effect.fn("readKaktusFx")(function* (input: ReadOpti
 	const audited = yield* runAuditedFx(
 		{
 			actor: options.actor,
+			bestEffort: options.bestEffort,
 			action: ActionEnumSchema.enum.read_kaktus,
 			inputs: [
 				root,
@@ -31,6 +33,7 @@ export const readKaktusFx = Effect.fn("readKaktusFx")(function* (input: ReadOpti
 			output,
 		},
 		importRecordsFx({
+			bestEffort: options.bestEffort,
 			records: readKaktusStream({
 				...options,
 				input: root,
@@ -45,6 +48,7 @@ export const readKaktusFx = Effect.fn("readKaktusFx")(function* (input: ReadOpti
 				maxRecordBytes: options.maxOutputRecordBytes,
 			},
 		}),
+		formatBatchSummaryFn,
 	);
 	return {
 		...audited.result,

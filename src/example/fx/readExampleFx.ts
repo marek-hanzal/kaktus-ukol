@@ -5,6 +5,7 @@ import { checkDataPathsFx } from "~/file-boundary/fx/checkDataPathsFx";
 import { importRecordsFx } from "~/record-import/fx/importRecordsFx";
 import { FormatEnumSchema } from "~/record-export/schema/FormatEnumSchema";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
+import { formatBatchSummaryFn } from "~/record-validation/fn/formatBatchSummaryFn";
 import { ReadOptionsSchema } from "../schema/ReadOptionsSchema";
 import { readExampleStream } from "../stream/readExampleStream";
 
@@ -32,11 +33,13 @@ export const readExampleFx = Effect.fn("readExampleFx")(function* (
 	const audited = yield* runAuditedFx(
 		{
 			actor: options.actor,
+			bestEffort: options.bestEffort,
 			action: ActionEnumSchema.enum.read_example,
 			inputs,
 			output,
 		},
 		importRecordsFx({
+			bestEffort: options.bestEffort,
 			records: readExampleStream({
 				...options,
 				input,
@@ -51,6 +54,7 @@ export const readExampleFx = Effect.fn("readExampleFx")(function* (
 				maxRecordBytes: options.maxOutputRecordBytes,
 			},
 		}),
+		formatBatchSummaryFn,
 	);
 	return {
 		...audited.result,

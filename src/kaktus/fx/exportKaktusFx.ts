@@ -11,6 +11,8 @@ import { readIntermediateStream } from "~/record-import/stream/readIntermediateS
 import { projectKaktusInvoiceFx } from "~/record-export/fx/projectKaktusInvoiceFx";
 import { printKaktusInvoiceFn } from "~/record-export/fn/printKaktusInvoiceFn";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
+import type { BatchSummarySchema } from "~/record-validation/schema/BatchSummarySchema";
+import { formatBatchSummaryFn } from "~/record-validation/fn/formatBatchSummaryFn";
 import type { RecordValidationError } from "~/record-validation/error/RecordValidationError";
 import { ProcessingLog } from "~/processing-log/service/ProcessingLog";
 import { formatCauseFn } from "~/text-output/fn/formatCauseFn";
@@ -44,6 +46,7 @@ export const exportKaktusFx = Effect.fn("exportKaktusFx")(function* (
 	const audited = yield* runAuditedFx(
 		{
 			actor: options.actor,
+			bestEffort: options.bestEffort,
 			action: "export_kaktus",
 			inputs: [
 				input,
@@ -56,7 +59,8 @@ export const exportKaktusFx = Effect.fn("exportKaktusFx")(function* (
 					prefix: "taxy-kaktus-export-",
 				});
 				const snapshot = path.join(directory, "snapshot.ndjson");
-				yield* importRecordsFx({
+				const scanned = yield* importRecordsFx({
+					bestEffort: options.bestEffort,
 					records: readIntermediateStream({
 						path: input,
 						maxRecordBytes: options.maxRecordBytes,
@@ -79,6 +83,12 @@ export const exportKaktusFx = Effect.fn("exportKaktusFx")(function* (
 				});
 				let accepted = 0;
 				let rejected = 0;
+				const summaryFn = (): BatchSummarySchema.Type => ({
+					bestEffort: options.bestEffort,
+					records: accepted,
+					rejectedRecords: scanned.rejectedRecords + rejected,
+					reviewRequired: scanned.rejectedRecords + rejected > 0,
+				});
 				const rejectFx = Effect.fnUntraced(function* (
 					error: RecordValidationError | ExportError,
 					invoice: InvoiceRecordSchema.Type,
@@ -168,15 +178,19 @@ export const exportKaktusFx = Effect.fn("exportKaktusFx")(function* (
 					),
 					Stream.filter((bytes) => bytes !== null),
 					Stream.onEnd(
-						Effect.suspend(() =>
-							rejected === 0
-								? Effect.void
-								: Effect.fail(
-										new ExportError({
-											detail: `${rejected} XML invoices rejected, ${accepted} admitted; no XML published. See ${log.path}.`,
-										}),
-									),
-						),
+						Effect.gen(function* () {
+							if (accepted === 0 || (rejected > 0 && !options.bestEffort))
+								return yield* Effect.fail(
+									new ExportError({
+										detail: `${rejected} XML invoices rejected, ${accepted} admitted; no XML published. See ${log.path}.`,
+									}),
+								);
+							yield* log.writeFx({
+								operation,
+								phase: "progress",
+								message: `XML scan complete; ready for publication. ${formatBatchSummaryFn(summaryFn())}`,
+							});
+						}),
 					),
 				);
 				const header = `<?xml version="1.0" encoding="windows-1250"?>\r\n<KaktusDavka verze="3.2" firma="${options.companyId}">\r\n`;
@@ -191,8 +205,15 @@ export const exportKaktusFx = Effect.fn("exportKaktusFx")(function* (
 						maxChunkBytes: Math.max(1024, options.maxOutputRecordBytes),
 					},
 				});
+				yield* log
+					.writeFx({
+						operation,
+						phase: "succeeded",
+						message: `${publication.path}; ${formatBatchSummaryFn(summaryFn())}`,
+					})
+					.pipe(Effect.ignore);
 				return {
-					records: accepted,
+					...summaryFn(),
 					companyId: options.companyId,
 					publication,
 					log: log.path,
@@ -209,6 +230,7 @@ export const exportKaktusFx = Effect.fn("exportKaktusFx")(function* (
 					.pipe(Effect.ignore),
 			),
 		),
+		formatBatchSummaryFn,
 	);
 	return {
 		...audited.result,

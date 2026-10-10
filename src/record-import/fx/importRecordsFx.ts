@@ -1,8 +1,8 @@
 import { formatCauseFn } from "~/text-output/fn/formatCauseFn";
 import { formatProblemFn } from "~/record-validation/fn/formatProblemFn";
 import { Effect, Stream } from "effect";
+import { match } from "ts-pattern";
 import { IntermediateRecordSchema } from "~/import-record/schema/IntermediateRecordSchema";
-import type { RecordSchema } from "~/accounting-record/schema/RecordSchema";
 import { validateRecordFx } from "~/accounting-record/fx/validateRecordFx";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
 import type { RecordValidationError } from "~/record-validation/error/RecordValidationError";
@@ -12,6 +12,11 @@ import { ProcessingLog } from "~/processing-log/service/ProcessingLog";
 import { publishFileFx } from "~/file-publication/fx/publishFileFx";
 import { ExportOptionsSchema } from "~/record-export/schema/ExportOptionsSchema";
 import { encodeRecordFx } from "~/record-export/fx/encodeRecordFx";
+import type { OutputRecordTooLargeError } from "~/record-export/error/OutputRecordTooLargeError";
+import { BestEffortSchema } from "~/record-validation/schema/BestEffortSchema";
+import type { BatchSummarySchema } from "~/record-validation/schema/BatchSummarySchema";
+import type { IssueSchema } from "~/record-validation/schema/IssueSchema";
+import { formatBatchSummaryFn } from "~/record-validation/fn/formatBatchSummaryFn";
 import type { PublicationOptionsSchema } from "~/file-publication/schema/PublicationOptionsSchema";
 import type { CandidateSchema } from "../schema/CandidateSchema";
 import type { ImportResultSchema } from "../schema/ImportResultSchema";
@@ -19,6 +24,7 @@ import { ImportRejectedError } from "../error/ImportRejectedError";
 
 interface Props<E, R> {
 	readonly records: Stream.Stream<CandidateSchema.Type, E, R>;
+	readonly bestEffort: boolean;
 	readonly publication: PublicationOptionsSchema.Type;
 	readonly exportOptions: ExportOptionsSchema.Type;
 }
@@ -26,9 +32,11 @@ interface Props<E, R> {
 /** Source-independent validation and publication, preserving each adapter's E/R. */
 export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 	records,
+	bestEffort: inputBestEffort,
 	publication: options,
 	exportOptions: inputExportOptions,
 }: Props<E, R>) {
+	const bestEffort = yield* parseRecordFx(BestEffortSchema, inputBestEffort, "batch policy");
 	const exportOptions = yield* parseRecordFx(
 		ExportOptionsSchema,
 		inputExportOptions,
@@ -39,31 +47,58 @@ export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 	let rejected = 0;
 	let nextProgress = 1000;
 	const operation = "record-import";
+	const summaryFn = (): BatchSummarySchema.Type => ({
+		bestEffort,
+		records: accepted,
+		rejectedRecords: rejected,
+		reviewRequired: rejected > 0,
+	});
 	yield* log.writeFx({
 		operation,
 		phase: "started",
-		message: options.output,
+		message: `${options.output}; mode: ${bestEffort ? "best-effort" : "strict"}`,
 	});
 
 	const logRejectionFx = Effect.fnUntraced(function* (
-		error: RecordValidationError,
+		error: RecordValidationError | OutputRecordTooLargeError,
 		candidate: CandidateSchema.Type,
 		stage: StageEnumSchema.Type,
 		record: IntermediateRecordSchema.Type | null,
-	): Effect.fn.Return<null, RecordValidationError> {
+	): Effect.fn.Return<null, RecordValidationError | OutputRecordTooLargeError> {
 		rejected += 1;
-		for (const issue of error.issues) {
+		const issues = match(error)
+			.with(
+				{
+					_tag: "RecordValidationError",
+				},
+				({ issues }) =>
+					issues.map((issue) => ({
+						path: issue.path.map(String),
+						code: issue.code,
+						message: issue.message,
+					})),
+			)
+			.with(
+				{
+					_tag: "OutputRecordTooLargeError",
+				},
+				(error): IssueSchema.Type[] => [
+					{
+						path: [],
+						code: "too_big",
+						message: error.message,
+					},
+				],
+			)
+			.exhaustive();
+		for (const issue of issues) {
 			const problem = {
 				input: candidate.input,
 				position: candidate.position,
 				stage,
 				source: record?.source ?? null,
 				type: record?.type ?? null,
-				issue: {
-					path: issue.path.map(String),
-					code: issue.code,
-					message: issue.message,
-				},
+				issue,
 			} satisfies ProblemSchema.Type;
 			yield* log
 				.writeFx({
@@ -81,7 +116,7 @@ export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 
 	const processRecordFx = Effect.fnUntraced(function* (
 		candidate: CandidateSchema.Type,
-	): Effect.fn.Return<RecordSchema.Type | null, RecordValidationError> {
+	): Effect.fn.Return<Uint8Array | null, RecordValidationError | OutputRecordTooLargeError> {
 		let stage: StageEnumSchema.Type = StageEnumSchema.enum.intermediate;
 		let intermediate: IntermediateRecordSchema.Type | null = null;
 		return yield* Effect.gen(function* () {
@@ -91,16 +126,18 @@ export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 				`${candidate.input}:${candidate.position}`,
 			);
 			stage = StageEnumSchema.enum.domain;
-			return yield* validateRecordFx(intermediate);
+			const record = yield* validateRecordFx(intermediate);
+			stage = StageEnumSchema.enum.output;
+			const bytes = yield* encodeRecordFx(record, exportOptions);
+			accepted += 1;
+			return bytes;
 		}).pipe(
-			Effect.matchEffect({
-				onFailure: (error) => logRejectionFx(error, candidate, stage, intermediate),
-				onSuccess: (record) =>
-					Effect.sync(() => {
-						accepted += 1;
-						return record;
-					}),
-			}),
+			Effect.catchTag("RecordValidationError", (error) =>
+				logRejectionFx(error, candidate, stage, intermediate),
+			),
+			Effect.catchTag("OutputRecordTooLargeError", (error) =>
+				logRejectionFx(error, candidate, stage, intermediate),
+			),
 		);
 	});
 
@@ -121,20 +158,22 @@ export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 			}),
 		),
 		Stream.filter((record) => record !== null),
-		Stream.mapEffect((record) => encodeRecordFx(record, exportOptions), {
-			concurrency: 1,
-		}),
 		Stream.onEnd(
-			Effect.suspend(() => {
-				if (rejected > 0)
-					return Effect.fail(
+			Effect.gen(function* () {
+				if (rejected > 0 && (!bestEffort || accepted === 0))
+					return yield* Effect.fail(
 						new ImportRejectedError({
 							accepted,
 							rejected,
 							log: log.path,
 						}),
 					);
-				return Effect.void;
+				// Required before commit: omissions cannot be published without their review notice.
+				yield* log.writeFx({
+					operation,
+					phase: "progress",
+					message: `Scan complete; ready for publication. ${formatBatchSummaryFn(summaryFn())}`,
+				});
 			}),
 		),
 	);
@@ -156,11 +195,11 @@ export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 		.writeFx({
 			operation,
 			phase: "succeeded",
-			message: `${accepted} validated records published to ${publication.path}`,
+			message: `${publication.path}; ${formatBatchSummaryFn(summaryFn())}`,
 		})
 		.pipe(Effect.ignore);
 	return {
-		records: accepted,
+		...summaryFn(),
 		format: exportOptions.format,
 		publication,
 		log: log.path,

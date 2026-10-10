@@ -11,6 +11,7 @@ import { ProcessingLog } from "~/processing-log/service/ProcessingLog";
 export const runAuditedFx = Effect.fn("runAuditedFx")(function* <A, E, R>(
 	input: OperationSchema.Type,
 	work: Effect.Effect<A, E, R>,
+	formatResultFn: (result: A) => string = () => "Complete result published.",
 ) {
 	const operation = yield* parseRecordFx(OperationSchema, input, "audit operation");
 	const audit = yield* AuditLog;
@@ -29,13 +30,18 @@ export const runAuditedFx = Effect.fn("runAuditedFx")(function* <A, E, R>(
 	});
 	return yield* Effect.uninterruptibleMask((restore) =>
 		Effect.gen(function* () {
-			yield* writeFx("started", "Caller-declared identity; operation requested.");
+			yield* writeFx(
+				"started",
+				operation.bestEffort
+					? "Best-effort requested; caller accepts omitted records and must review the processing log."
+					: "Caller-declared identity; strict operation requested.",
+			);
 			const result = yield* restore(work).pipe(
 				Effect.onError((cause) =>
 					writeFx("failed", formatCauseFn(cause)).pipe(Effect.ignore),
 				),
 			);
-			const completion = yield* writeFx("succeeded", "Complete result published.").pipe(
+			const completion = yield* writeFx("succeeded", formatResultFn(result)).pipe(
 				Effect.matchEffect({
 					onSuccess: () => Effect.succeed("recorded" as const),
 					onFailure: (error) =>

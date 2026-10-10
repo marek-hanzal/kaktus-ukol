@@ -4,6 +4,7 @@ import { EncodingEnumSchema } from "~/dbf/schema/EncodingEnumSchema";
 import { readKaktusFx } from "~/kaktus/fx/readKaktusFx";
 import type { ReadOptionsSchema } from "~/kaktus/schema/ReadOptionsSchema";
 import { formatImportSummaryFn } from "~/record-import/fn/formatImportSummaryFn";
+import { BestEffortFlag } from "../flag/BestEffortFlag";
 
 const runConvertKaktusCommandFx = Effect.fn("runConvertKaktusCommandFx")(function* (
 	options: ReadOptionsSchema.Type,
@@ -16,6 +17,7 @@ export const ConvertKaktusCommand = Command.make(
 	"convert",
 	{
 		input: Argument.String("data-directory"),
+		bestEffort: BestEffortFlag,
 		output: Flag.String("output").pipe(Flag.withDefault(".out/kaktus.ndjson")),
 		actor: Flag.String("actor").pipe(
 			Flag.withDescription("Caller-declared identity for the audit log."),

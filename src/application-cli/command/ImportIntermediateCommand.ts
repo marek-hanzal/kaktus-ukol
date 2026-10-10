@@ -4,6 +4,7 @@ import { formatImportSummaryFn } from "~/record-import/fn/formatImportSummaryFn"
 import { importIntermediateFx } from "~/record-import/fx/importIntermediateFx";
 import type { ImportOptionsSchema } from "~/record-import/schema/ImportOptionsSchema";
 import { FormatEnumSchema } from "~/record-export/schema/FormatEnumSchema";
+import { BestEffortFlag } from "../flag/BestEffortFlag";
 
 const runImportIntermediateCommandFx = Effect.fn("runImportIntermediateCommandFx")(function* (
 	options: ImportOptionsSchema.Type,
@@ -17,6 +18,7 @@ export const ImportIntermediateCommand = Command.make(
 	"import-intermediate",
 	{
 		input: Argument.String("input"),
+		bestEffort: BestEffortFlag,
 		actor: Flag.String("actor").pipe(
 			Flag.withDescription("Caller-declared identity for the audit log."),
 		),

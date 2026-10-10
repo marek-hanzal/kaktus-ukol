@@ -6,6 +6,7 @@ export const formatEntryFn = (entry: EntrySchema.Type): string =>
 		`${entry.timestamp} [${entry.phase}] ${entry.action}`,
 		`operation=${entry.operationId}`,
 		`actor=${escapeLineFn(entry.actor)}`,
+		`mode=${entry.bestEffort ? "best-effort" : "strict"}`,
 		`inputs=${entry.inputs.map(escapeLineFn).join("; ")}`,
 		`output=${escapeLineFn(entry.output)}`,
 		escapeLineFn(entry.detail),

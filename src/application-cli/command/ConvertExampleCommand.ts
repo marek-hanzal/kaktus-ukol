@@ -3,6 +3,7 @@ import { Argument, Command, Flag } from "effect/cli";
 import { readExampleFx } from "~/example/fx/readExampleFx";
 import type { ReadOptionsSchema } from "~/example/schema/ReadOptionsSchema";
 import { formatImportSummaryFn } from "~/record-import/fn/formatImportSummaryFn";
+import { BestEffortFlag } from "../flag/BestEffortFlag";
 
 const runConvertExampleCommandFx = Effect.fn("runConvertExampleCommandFx")(function* (
 	options: ReadOptionsSchema.Type,
@@ -14,6 +15,7 @@ export const ConvertExampleCommand = Command.make(
 	"convert",
 	{
 		input: Argument.String("json-directory"),
+		bestEffort: BestEffortFlag,
 		output: Flag.String("output").pipe(Flag.withDefault(".out/example.ndjson")),
 		actor: Flag.String("actor").pipe(
 			Flag.withDescription("Caller-declared identity for the audit log."),

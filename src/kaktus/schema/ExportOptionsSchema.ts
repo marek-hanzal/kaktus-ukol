@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ActorSchema } from "~/audit-log/schema/ActorSchema";
 import { CompanyIdSchema } from "./CompanyIdSchema";
+import { BestEffortSchema } from "~/record-validation/schema/BestEffortSchema";
 
 /** One company and optionally one immutable invoice from our native intermediate. */
 export const ExportOptionsSchema = z
@@ -8,6 +9,7 @@ export const ExportOptionsSchema = z
 		input: z.string().min(1),
 		output: z.string().min(1),
 		actor: ActorSchema,
+		bestEffort: BestEffortSchema,
 		companyId: CompanyIdSchema,
 		invoiceId: z.int().nonnegative().nullable(),
 		maxRecordBytes: z

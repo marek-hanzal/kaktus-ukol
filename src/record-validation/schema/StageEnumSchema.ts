@@ -5,6 +5,7 @@ export const StageEnumSchema = z
 	.enum([
 		"intermediate",
 		"domain",
+		"output",
 	])
 	.meta({
 		id: "record-validation.StageEnumSchema",

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ReceiptSchema } from "~/audit-log/schema/ReceiptSchema";
 import { ImportResultSchema } from "./ImportResultSchema";
 /** Complete data result and the independently acknowledged operation audit. */
-export const ImportSummarySchema = ImportResultSchema.extend({
+export const ImportSummarySchema = ImportResultSchema.safeExtend({
 	audit: ReceiptSchema,
 }).meta({
 	id: "record-import.ImportSummarySchema",

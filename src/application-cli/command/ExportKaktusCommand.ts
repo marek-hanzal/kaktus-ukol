@@ -2,6 +2,9 @@ import { Console, Effect, Option } from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import { exportKaktusFx } from "~/kaktus/fx/exportKaktusFx";
 import type { ExportOptionsSchema } from "~/kaktus/schema/ExportOptionsSchema";
+import { formatBatchSummaryFn } from "~/record-validation/fn/formatBatchSummaryFn";
+import { escapeLineFn } from "~/text-output/fn/escapeLineFn";
+import { BestEffortFlag } from "../flag/BestEffortFlag";
 
 const runExportKaktusCommandFx = Effect.fn("runExportKaktusCommandFx")(function* (
 	options: Omit<ExportOptionsSchema.Type, "invoiceId"> & {
@@ -13,7 +16,7 @@ const runExportKaktusCommandFx = Effect.fn("runExportKaktusCommandFx")(function*
 		invoiceId: Option.getOrNull(options.invoiceId),
 	});
 	yield* Console.log(
-		`Succeeded: ${receipt.records} invoices exported for company ${receipt.companyId}.\nXML: ${receipt.publication.path} (${receipt.publication.bytes} bytes; Windows-1250)\nProcessing log: ${receipt.log}\nAudit: ${receipt.audit.path}; operation ${receipt.audit.operationId}; completion ${receipt.audit.completion}`,
+		`${receipt.reviewRequired ? "Completed with omissions" : "Succeeded"}: ${receipt.records} invoices exported for company ${receipt.companyId}.\n${formatBatchSummaryFn(receipt)}\nXML: ${escapeLineFn(receipt.publication.path)} (${receipt.publication.bytes} bytes; Windows-1250)\nProcessing log: ${escapeLineFn(receipt.log)}\nAudit: ${escapeLineFn(receipt.audit.path)}; operation ${receipt.audit.operationId}; completion ${receipt.audit.completion}`,
 	);
 });
 
@@ -21,6 +24,7 @@ export const ExportKaktusCommand = Command.make(
 	"export",
 	{
 		input: Argument.String("intermediate-file"),
+		bestEffort: BestEffortFlag,
 		companyId: Flag.String("company").pipe(
 			Flag.withDescription("Exact four-digit target company ID."),
 		),

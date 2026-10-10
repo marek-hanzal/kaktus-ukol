@@ -3,6 +3,7 @@ import { runAuditedFx } from "~/audit-log/fx/runAuditedFx";
 import { checkDataPathsFx } from "~/file-boundary/fx/checkDataPathsFx";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
 import { ImportOptionsSchema } from "../schema/ImportOptionsSchema";
+import { formatBatchSummaryFn } from "~/record-validation/fn/formatBatchSummaryFn";
 import { readIntermediateStream } from "../stream/readIntermediateStream";
 import { importRecordsFx } from "./importRecordsFx";
 
@@ -27,6 +28,7 @@ export const importIntermediateFx = Effect.fn("importIntermediateFx")(function* 
 	const audited = yield* runAuditedFx(
 		{
 			actor: options.actor,
+			bestEffort: options.bestEffort,
 			action: "import_intermediate",
 			inputs: [
 				input,
@@ -34,6 +36,7 @@ export const importIntermediateFx = Effect.fn("importIntermediateFx")(function* 
 			output,
 		},
 		importRecordsFx({
+			bestEffort: options.bestEffort,
 			records: readIntermediateStream({
 				path: input,
 				maxRecordBytes: options.maxRecordBytes,
@@ -48,6 +51,7 @@ export const importIntermediateFx = Effect.fn("importIntermediateFx")(function* 
 				maxRecordBytes: options.maxOutputRecordBytes,
 			},
 		}),
+		formatBatchSummaryFn,
 	);
 	return {
 		...audited.result,

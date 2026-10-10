@@ -4,6 +4,7 @@ import { ActionEnumSchema } from "./ActionEnumSchema";
 export const OperationSchema = z
 	.object({
 		actor: ActorSchema,
+		bestEffort: z.boolean().optional(),
 		action: ActionEnumSchema,
 		inputs: z.array(z.string().min(1).max(4096)).min(1).max(2),
 		output: z.string().min(1).max(4096),

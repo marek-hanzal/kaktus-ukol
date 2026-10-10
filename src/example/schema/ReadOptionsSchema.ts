@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ActorSchema } from "~/audit-log/schema/ActorSchema";
 import { ExportOptionsSchema } from "~/record-export/schema/ExportOptionsSchema";
+import { BestEffortSchema } from "~/record-validation/schema/BestEffortSchema";
 
 /** The supplied TAXY JSON directory converted to the shared intermediate format. */
 export const ReadOptionsSchema = z
@@ -8,6 +9,7 @@ export const ReadOptionsSchema = z
 		input: z.string().min(1),
 		output: z.string().min(1),
 		actor: ActorSchema,
+		bestEffort: BestEffortSchema,
 		maxRecordBytes: z
 			.int()
 			.min(1)
