@@ -1,4 +1,4 @@
-import { Effect, Path } from "effect";
+import { Effect, Path, Stream } from "effect";
 import { runAuditedFx } from "~/audit-log/fx/runAuditedFx";
 import { ActionEnumSchema } from "~/audit-log/schema/ActionEnumSchema";
 import { checkDataPathsFx } from "~/file-boundary/fx/checkDataPathsFx";
@@ -7,7 +7,7 @@ import { FormatEnumSchema } from "~/record-export/schema/FormatEnumSchema";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
 import { formatBatchSummaryFn } from "~/record-validation/fn/formatBatchSummaryFn";
 import { ReadOptionsSchema } from "../schema/ReadOptionsSchema";
-import { readKaktusStream } from "../stream/readKaktusStream";
+import { createKaktusStreamFx } from "./createKaktusStreamFx";
 
 /** Read-only conversion reuses the shared admission, diagnostics, audit and atomic publication. */
 export const readKaktusFx = Effect.fn("readKaktusFx")(function* (input: ReadOptionsSchema.Type) {
@@ -34,11 +34,13 @@ export const readKaktusFx = Effect.fn("readKaktusFx")(function* (input: ReadOpti
 		},
 		importRecordsFx({
 			bestEffort: options.bestEffort,
-			records: readKaktusStream({
-				...options,
-				input: root,
-				output,
-			}),
+			records: Stream.unwrap(
+				createKaktusStreamFx({
+					...options,
+					input: root,
+					output,
+				}),
+			),
 			publication: {
 				output,
 				maxChunkBytes: options.maxOutputRecordBytes + 1,

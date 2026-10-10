@@ -1,7 +1,7 @@
 import { Effect, Path, Stream } from "effect";
 import { TypeEnumSchema } from "~/import-record/schema/TypeEnumSchema";
 import type { ReadOptionsSchema } from "../schema/ReadOptionsSchema";
-import { readTableStream } from "../stream/readTableStream";
+import { createTableStreamFx } from "./createTableStreamFx";
 import { ensureCompanyUnlockedFx } from "./ensureCompanyUnlockedFx";
 import { resolveCompanySourceFx } from "./resolveCompanySourceFx";
 
@@ -11,15 +11,17 @@ export const checkCompanyLocksFx = Effect.fn("checkCompanyLocksFx")(function* (
 	options: ReadOptionsSchema.Type,
 ) {
 	const path = yield* Path.Path;
-	yield* readTableStream(
-		root,
-		{
-			path: path.join(root, "FIRMY.DBF"),
-			encoding: options.encoding,
-			maxRecordBytes: options.maxRecordBytes,
-		},
-		TypeEnumSchema.enum.company,
-		null,
+	yield* Stream.unwrap(
+		createTableStreamFx(
+			root,
+			{
+				path: path.join(root, "FIRMY.DBF"),
+				encoding: options.encoding,
+				maxRecordBytes: options.maxRecordBytes,
+			},
+			TypeEnumSchema.enum.company,
+			null,
+		),
 	).pipe(
 		Stream.runForEach((candidate) =>
 			resolveCompanySourceFx(root, candidate).pipe(Effect.flatMap(ensureCompanyUnlockedFx)),

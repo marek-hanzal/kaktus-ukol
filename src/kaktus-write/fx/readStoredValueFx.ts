@@ -1,6 +1,6 @@
 import { Effect, Stream } from "effect";
 import type { z } from "zod";
-import { readIntermediateStream } from "~/record-import/stream/readIntermediateStream";
+import { createIntermediateStreamFx } from "~/record-import/fx/createIntermediateStreamFx";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
 import { WriteError } from "../error/WriteError";
 /** Internal state is untrusted input too, with one bounded JSON record. */
@@ -8,11 +8,13 @@ export const readStoredValueFx = Effect.fnUntraced(function* <S extends z.ZodTyp
 	file: string,
 	schema: S,
 ) {
-	const rows = yield* readIntermediateStream({
-		path: file,
-		maxRecordBytes: 1024 * 1024,
-		chunkBytes: 16 * 1024,
-	}).pipe(Stream.take(2), Stream.runCollect);
+	const rows = yield* Stream.unwrap(
+		createIntermediateStreamFx({
+			path: file,
+			maxRecordBytes: 1024 * 1024,
+			chunkBytes: 16 * 1024,
+		}),
+	).pipe(Stream.take(2), Stream.runCollect);
 	if (rows.length !== 1)
 		return yield* Effect.fail(
 			new WriteError({

@@ -17,7 +17,7 @@ export const readHeaderFx = Effect.fn("readHeaderFx")(function* (
 	const view = new DataView(fixed.buffer);
 	const headerBytes = view.getUint16(8, true);
 	const recordBytes = view.getUint16(10, true);
-	const fail = (detail: string, offset: number) =>
+	const failFx = (detail: string, offset: number) =>
 		Effect.fail(
 			new DbfFormatError({
 				path: options.path,
@@ -27,11 +27,11 @@ export const readHeaderFx = Effect.fn("readHeaderFx")(function* (
 			}),
 		);
 	if (fixed[0] !== 3)
-		return yield* fail("Only dBase III without memo fields (0x03) is supported", 0);
+		return yield* failFx("Only dBase III without memo fields (0x03) is supported", 0);
 	if (headerBytes < 65 || (headerBytes - 33) % 32 !== 0)
-		return yield* fail("Invalid header length", 8);
+		return yield* failFx("Invalid header length", 8);
 	if (recordBytes > options.maxRecordBytes)
-		return yield* fail(`Record exceeds ${options.maxRecordBytes} bytes`, 10);
+		return yield* failFx(`Record exceeds ${options.maxRecordBytes} bytes`, 10);
 	const encoding = yield* match(options.encoding)
 		.with("cp852", "windows-1250", (encoding) => Effect.succeed(encoding))
 		.with("auto", () =>
@@ -39,14 +39,14 @@ export const readHeaderFx = Effect.fn("readHeaderFx")(function* (
 				.with(0x64, 0x87, () => Effect.succeed("cp852" as const))
 				.with(0xc8, () => Effect.succeed("windows-1250" as const))
 				.otherwise((driver) =>
-					fail(`Unknown language driver ${driver}; select an explicit encoding`, 29),
+					failFx(`Unknown language driver ${driver}; select an explicit encoding`, 29),
 				),
 		)
 		.exhaustive();
 	const descriptors = new Uint8Array(headerBytes - 32);
 	yield* readExactFx(file, descriptors, options.path, 32, null);
 	if (descriptors[descriptors.length - 1] !== 13)
-		return yield* fail("Missing field descriptor terminator", headerBytes - 1);
+		return yield* failFx("Missing field descriptor terminator", headerBytes - 1);
 	const fields = [];
 	for (let offset = 0; offset < descriptors.length - 1; offset += 32) {
 		const descriptor = descriptors.subarray(offset, offset + 32);
@@ -69,10 +69,10 @@ export const readHeaderFx = Effect.fn("readHeaderFx")(function* (
 			fields,
 		},
 		options.path,
-	).pipe(Effect.catchTag("RecordValidationError", (error) => fail(error.message, 32)));
+	).pipe(Effect.catchTag("RecordValidationError", (error) => failFx(error.message, 32)));
 	if (1 + header.fields.reduce((size, field) => size + field.length, 0) !== recordBytes)
-		return yield* fail("Field widths do not match record length", 10);
+		return yield* failFx("Field widths do not match record length", 10);
 	if (new Set(header.fields.map((field) => field.name)).size !== fields.length)
-		return yield* fail("Duplicate field names", 32);
+		return yield* failFx("Duplicate field names", 32);
 	return header;
 });

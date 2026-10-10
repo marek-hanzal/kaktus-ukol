@@ -7,7 +7,7 @@ import { TypeEnumSchema } from "~/import-record/schema/TypeEnumSchema";
 import { SupplierRecordSchema } from "~/accounting-record/schema/SupplierRecordSchema";
 import type { InvoiceRecordSchema } from "~/accounting-record/schema/InvoiceRecordSchema";
 import { importRecordsFx } from "~/record-import/fx/importRecordsFx";
-import { readIntermediateStream } from "~/record-import/stream/readIntermediateStream";
+import { createIntermediateStreamFx } from "~/record-import/fx/createIntermediateStreamFx";
 import { projectKaktusInvoiceFx } from "~/record-export/fx/projectKaktusInvoiceFx";
 import { printKaktusInvoiceFn } from "~/record-export/fn/printKaktusInvoiceFn";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
@@ -19,7 +19,7 @@ import { formatCauseFn } from "~/text-output/fn/formatCauseFn";
 import { ExportOptionsSchema } from "../schema/ExportOptionsSchema";
 import type { ExportSummarySchema } from "../schema/ExportSummarySchema";
 import { ExportError } from "../error/ExportError";
-import { readExportSnapshotStream } from "../stream/readExportSnapshotStream";
+import { createAdmittedRecordStreamFx } from "~/record-import/fx/createAdmittedRecordStreamFx";
 import { indexExportSnapshotFx } from "./indexExportSnapshotFx";
 
 /** Validate the whole input once, join on disk, then publish one complete company batch. */
@@ -61,11 +61,13 @@ export const exportKaktusFx = Effect.fn("exportKaktusFx")(function* (
 				const snapshot = path.join(directory, "snapshot.ndjson");
 				const scanned = yield* importRecordsFx({
 					bestEffort: options.bestEffort,
-					records: readIntermediateStream({
-						path: input,
-						maxRecordBytes: options.maxRecordBytes,
-						chunkBytes: 16 * 1024,
-					}),
+					records: Stream.unwrap(
+						createIntermediateStreamFx({
+							path: input,
+							maxRecordBytes: options.maxRecordBytes,
+							chunkBytes: 16 * 1024,
+						}),
+					),
 					publication: {
 						output: snapshot,
 						maxChunkBytes: 1024 * 1024 + 1,
@@ -127,9 +129,9 @@ export const exportKaktusFx = Effect.fn("exportKaktusFx")(function* (
 								detail: `Missing supplier ${invoice.data.supplierId} in company ${options.companyId}.`,
 							}),
 						);
-					const stored = yield* readExportSnapshotStream(supplierPath).pipe(
-						Stream.runHead,
-					);
+					const stored = yield* Stream.unwrap(
+						createAdmittedRecordStreamFx(supplierPath),
+					).pipe(Stream.runHead);
 					const record = yield* Option.match(stored, {
 						onNone: () =>
 							Effect.fail(
@@ -155,7 +157,7 @@ export const exportKaktusFx = Effect.fn("exportKaktusFx")(function* (
 					accepted += 1;
 					return bytes;
 				});
-				const invoices = readExportSnapshotStream(snapshot).pipe(
+				const invoices = Stream.unwrap(createAdmittedRecordStreamFx(snapshot)).pipe(
 					Stream.filter((record) => record.type === TypeEnumSchema.enum.received_invoice),
 					Stream.filter(
 						(record) =>

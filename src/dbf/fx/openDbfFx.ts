@@ -40,7 +40,7 @@ export const openDbfFx = Effect.fn("openDbfFx")(function* (input: ReaderOptionsS
 		);
 	const buffer = new Uint8Array(header.recordBytes);
 	let nextRecord = 1;
-	const pull = Effect.fnUntraced(function* (): Effect.fn.Return<
+	const pullFx = Effect.fnUntraced(function* (): Effect.fn.Return<
 		readonly [
 			RowSchema.Type,
 		],
@@ -87,6 +87,6 @@ export const openDbfFx = Effect.fn("openDbfFx")(function* (input: ReaderOptionsS
 	});
 	return {
 		header,
-		rows: Stream.fromPull(Effect.succeed(pull())),
+		rows: Stream.fromPull(Effect.succeed(pullFx())),
 	};
 });

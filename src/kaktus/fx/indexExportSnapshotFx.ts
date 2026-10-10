@@ -4,7 +4,7 @@ import { TypeEnumSchema } from "~/import-record/schema/TypeEnumSchema";
 import { encodeRecordFx } from "~/record-export/fx/encodeRecordFx";
 import type { ExportOptionsSchema } from "../schema/ExportOptionsSchema";
 import { ExportError } from "../error/ExportError";
-import { readExportSnapshotStream } from "../stream/readExportSnapshotStream";
+import { createAdmittedRecordStreamFx } from "~/record-import/fx/createAdmittedRecordStreamFx";
 
 /** Disk-backed supplier and invoice identities keep memory independent of dataset size. */
 export const indexExportSnapshotFx = Effect.fn("indexExportSnapshotFx")(function* (
@@ -36,7 +36,7 @@ export const indexExportSnapshotFx = Effect.fn("indexExportSnapshotFx")(function
 			}),
 		);
 	});
-	yield* readExportSnapshotStream(snapshot).pipe(
+	yield* Stream.unwrap(createAdmittedRecordStreamFx(snapshot)).pipe(
 		Stream.runForEach((record) =>
 			match(record)
 				.with(

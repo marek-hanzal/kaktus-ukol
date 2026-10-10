@@ -3,7 +3,7 @@ import { match } from "ts-pattern";
 import iconv from "iconv-lite";
 import { ClientRecordSchema } from "~/accounting-record/schema/ClientRecordSchema";
 import { CompanyRecordSchema } from "~/accounting-record/schema/CompanyRecordSchema";
-import { readExportSnapshotStream } from "~/kaktus/stream/readExportSnapshotStream";
+import { createAdmittedRecordStreamFx } from "~/record-import/fx/createAdmittedRecordStreamFx";
 import { projectKaktusRequestFx } from "~/record-export/fx/projectKaktusRequestFx";
 import { printKaktusInvoiceFn } from "~/record-export/fn/printKaktusInvoiceFn";
 import { appendEntryFx } from "~/file-append/fx/appendEntryFx";
@@ -35,7 +35,7 @@ export const planRequestsFx = Effect.fn("planRequestsFx")(function* (
 		alreadyPresent: 0,
 	};
 	yield* fs.writeFileString(path.join(run, "plan.ndjson"), "");
-	const reject = (code: string, detail: string) =>
+	const rejectFx = (code: string, detail: string) =>
 		Effect.fail(
 			new RequestRejectedError({
 				code,
@@ -48,21 +48,21 @@ export const planRequestsFx = Effect.fn("planRequestsFx")(function* (
 	) {
 		const clientFile = path.join(run, `client-${request.data.clientId}.json`);
 		if (!(yield* fs.exists(clientFile)))
-			return yield* reject(
+			return yield* rejectFx(
 				"unknown_client",
 				`No client mapping for ${request.data.clientId}`,
 			);
 		const client = yield* readStoredValueFx(clientFile, ClientRecordSchema);
 		const companyId = client.kaktus?.companyId;
 		if (companyId === undefined)
-			return yield* reject("invalid_route", "Client has no target company");
+			return yield* rejectFx("invalid_route", "Client has no target company");
 		routeFn(companyId);
 		const companyFile = path.join(inventory, `company-${companyId}.json`);
 		if (!(yield* fs.exists(companyFile)))
-			return yield* reject("unknown_company", `Target company ${companyId} does not exist`);
+			return yield* rejectFx("unknown_company", `Target company ${companyId} does not exist`);
 		const company = yield* readStoredValueFx(companyFile, CompanyRecordSchema);
 		if (company.data.folder !== companyId)
-			return yield* reject(
+			return yield* rejectFx(
 				"unsupported_target_folder",
 				"Simulator requires DATA/<company ID>; refusing a conflicting FIRMY route",
 			);
@@ -77,7 +77,7 @@ export const planRequestsFx = Effect.fn("planRequestsFx")(function* (
 		);
 		const seen = path.join(run, `planned-business-${businessKey}.json`);
 		if (yield* fs.exists(seen))
-			return yield* reject(
+			return yield* rejectFx(
 				"duplicate_input",
 				"Another request has the same company, supplier and invoice number",
 			);
@@ -100,7 +100,9 @@ export const planRequestsFx = Effect.fn("planRequestsFx")(function* (
 					return false;
 				}),
 			)
-			.with("conflict", () => reject("target_conflict", formatTargetComparisonFn(comparison)))
+			.with("conflict", () =>
+				rejectFx("target_conflict", formatTargetComparisonFn(comparison)),
+			)
 			.with("ambiguous", () =>
 				Effect.fail(
 					new WriteError({
@@ -111,7 +113,7 @@ export const planRequestsFx = Effect.fn("planRequestsFx")(function* (
 			.exhaustive();
 		if (!missing) return;
 		if (iconv.encode(printKaktusInvoiceFn(invoice), "windows-1250").byteLength > 64 * 1024)
-			return yield* reject("output_too_large", "Encoded XML invoice exceeds 64 KiB");
+			return yield* rejectFx("output_too_large", "Encoded XML invoice exceeds 64 KiB");
 		const plan = yield* parseRecordFx(
 			PlanSchema,
 			{
@@ -130,7 +132,7 @@ export const planRequestsFx = Effect.fn("planRequestsFx")(function* (
 		);
 		summary.planned += 1;
 	});
-	yield* readExportSnapshotStream(path.join(run, "requests.ndjson")).pipe(
+	yield* Stream.unwrap(createAdmittedRecordStreamFx(path.join(run, "requests.ndjson"))).pipe(
 		Stream.runForEach((record) => {
 			if (record.type !== "invoice_request") return Effect.void;
 			let companyId: string | null = null;

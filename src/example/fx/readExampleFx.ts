@@ -1,4 +1,4 @@
-import { Effect, Path } from "effect";
+import { Effect, Path, Stream } from "effect";
 import { runAuditedFx } from "~/audit-log/fx/runAuditedFx";
 import { ActionEnumSchema } from "~/audit-log/schema/ActionEnumSchema";
 import { checkDataPathsFx } from "~/file-boundary/fx/checkDataPathsFx";
@@ -7,7 +7,7 @@ import { FormatEnumSchema } from "~/record-export/schema/FormatEnumSchema";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
 import { formatBatchSummaryFn } from "~/record-validation/fn/formatBatchSummaryFn";
 import { ReadOptionsSchema } from "../schema/ReadOptionsSchema";
-import { readExampleStream } from "../stream/readExampleStream";
+import { createExampleStreamFx } from "./createExampleStreamFx";
 
 /** Audit before reading the supplied JSON, then validate and atomically publish the common format. */
 export const readExampleFx = Effect.fn("readExampleFx")(function* (
@@ -40,11 +40,13 @@ export const readExampleFx = Effect.fn("readExampleFx")(function* (
 		},
 		importRecordsFx({
 			bestEffort: options.bestEffort,
-			records: readExampleStream({
-				...options,
-				input,
-				output,
-			}),
+			records: Stream.unwrap(
+				createExampleStreamFx({
+					...options,
+					input,
+					output,
+				}),
+			),
 			publication: {
 				output,
 				maxChunkBytes: options.maxOutputRecordBytes + 1,

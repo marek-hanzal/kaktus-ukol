@@ -55,9 +55,9 @@ export const publishFileFx = Effect.fn("publishFileFx")(function* <E, R>({
 	});
 
 	const receipt = yield* Effect.scoped(
-		Effect.uninterruptibleMask((restore) =>
+		Effect.uninterruptibleMask((restoreFx) =>
 			Effect.gen(function* () {
-				yield* restore(
+				yield* restoreFx(
 					fileSystem.makeDirectory(parent, {
 						recursive: true,
 					}),
@@ -71,7 +71,7 @@ export const publishFileFx = Effect.fn("publishFileFx")(function* <E, R>({
 				let nextProgress = 16 * 1024 * 1024;
 
 				// Cancellation is allowed while staging. Once staging settles, commit is indivisible.
-				yield* restore(
+				yield* restoreFx(
 					Effect.scoped(
 						Effect.gen(function* () {
 							const file = yield* fileSystem.open(pending, {

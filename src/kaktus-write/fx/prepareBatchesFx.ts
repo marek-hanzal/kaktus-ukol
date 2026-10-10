@@ -2,13 +2,13 @@ import { Effect, Path, Stream } from "effect";
 import iconv from "iconv-lite";
 import { publishFileFx } from "~/file-publication/fx/publishFileFx";
 import { printKaktusInvoiceFn } from "~/record-export/fn/printKaktusInvoiceFn";
-import { readBatchesStream } from "../stream/readBatchesStream";
+import { createBatchesStreamFx } from "./createBatchesStreamFx";
 
 /** Prepare the complete sibling XML set before the first external mutation. */
 export const prepareBatchesFx = Effect.fn("prepareBatchesFx")(function* (run: string) {
 	const path = yield* Path.Path;
 	let sequence = 0;
-	yield* readBatchesStream(path.join(run, "plan.ndjson")).pipe(
+	yield* Stream.unwrap(createBatchesStreamFx(path.join(run, "plan.ndjson"))).pipe(
 		Stream.runForEach((batch) =>
 			Effect.gen(function* () {
 				const first = batch[0];

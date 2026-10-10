@@ -1,5 +1,5 @@
 import { Effect, Stream } from "effect";
-import { readIntermediateStream } from "~/record-import/stream/readIntermediateStream";
+import { createIntermediateStreamFx } from "~/record-import/fx/createIntermediateStreamFx";
 import { RecordComparisonError } from "../error/RecordComparisonError";
 
 /** Bound input to one business record. Never collect or join a dataset to compare two records. */
@@ -7,11 +7,13 @@ export const readSingleRecordFx = Effect.fn("readSingleRecordFx")(function* (
 	path: string,
 	maxRecordBytes: number,
 ) {
-	const records = yield* readIntermediateStream({
-		path,
-		maxRecordBytes,
-		chunkBytes: 16 * 1024,
-	}).pipe(Stream.take(2), Stream.runCollect);
+	const records = yield* Stream.unwrap(
+		createIntermediateStreamFx({
+			path,
+			maxRecordBytes,
+			chunkBytes: 16 * 1024,
+		}),
+	).pipe(Stream.take(2), Stream.runCollect);
 	if (records.length !== 1)
 		return yield* Effect.fail(
 			new RecordComparisonError({

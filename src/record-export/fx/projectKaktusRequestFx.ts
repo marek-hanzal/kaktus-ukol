@@ -15,7 +15,7 @@ export const projectKaktusRequestFx = Effect.fnUntraced(function* (
 	company: CompanyRecordSchema.Type,
 ) {
 	const data = request.data;
-	const reject = (field: string, message: string) =>
+	const rejectFx = (field: string, message: string) =>
 		Effect.fail(
 			new RecordValidationError({
 				schemaId: "record-export.KaktusInvoiceSchema",
@@ -32,17 +32,17 @@ export const projectKaktusRequestFx = Effect.fnUntraced(function* (
 			}),
 		);
 	if (client.data.id !== data.clientId || client.kaktus?.companyId !== company.data.id)
-		return yield* reject("clientId", "Client does not resolve to this target company");
+		return yield* rejectFx("clientId", "Client does not resolve to this target company");
 	if (
 		data.buyer.registrationNumber !== client.data.registrationNumber ||
 		client.data.registrationNumber !== company.data.registrationNumber
 	)
-		return yield* reject(
+		return yield* rejectFx(
 			"buyer.registrationNumber",
 			"Buyer, client and live target company must have the same registration number",
 		);
 	if (request.kaktus?.companyId !== undefined && request.kaktus.companyId !== company.data.id)
-		return yield* reject(
+		return yield* rejectFx(
 			"kaktus.companyId",
 			"Request metadata conflicts with the client route",
 		);
@@ -54,7 +54,7 @@ export const projectKaktusRequestFx = Effect.fnUntraced(function* (
 	let tax21 = zero;
 	for (const line of data.vat) {
 		if (line.rate === 0 && !BigDecimal.equals(line.tax, zero))
-			return yield* reject("vat", "Zero-rate VAT must have zero tax");
+			return yield* rejectFx("vat", "Zero-rate VAT must have zero tax");
 		match(line.rate)
 			.with(0, () => {
 				base0 = BigDecimal.sum(base0, line.base);
@@ -77,18 +77,21 @@ export const projectKaktusRequestFx = Effect.fnUntraced(function* (
 		tax21,
 	].reduce(BigDecimal.sum, zero);
 	if (!BigDecimal.equals(sum, data.total))
-		return yield* reject("total", "Total differs from the exact sum of bases and VAT");
+		return yield* rejectFx("total", "Total differs from the exact sum of bases and VAT");
 	if (
 		data.currency !== "CZK" &&
 		(data.exchangeRate === null || !BigDecimal.isPositive(data.exchangeRate))
 	)
-		return yield* reject("exchangeRate", "Foreign currency requires a positive exchange rate");
+		return yield* rejectFx(
+			"exchangeRate",
+			"Foreign currency requires a positive exchange rate",
+		);
 	if (
 		data.currency === "CZK" &&
 		data.exchangeRate !== null &&
 		!BigDecimal.equals(data.exchangeRate, BigDecimal.fromBigInt(1n))
 	)
-		return yield* reject("exchangeRate", "CZK exchange rate must be one or absent");
+		return yield* rejectFx("exchangeRate", "CZK exchange rate must be one or absent");
 	return yield* parseRecordFx(
 		KaktusInvoiceSchema,
 		{

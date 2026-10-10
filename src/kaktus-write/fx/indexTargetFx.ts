@@ -1,6 +1,6 @@
 import { Effect, FileSystem, Path, Stream } from "effect";
 import { match } from "ts-pattern";
-import { readKaktusStream } from "~/kaktus/stream/readKaktusStream";
+import { createKaktusStreamFx } from "~/kaktus/fx/createKaktusStreamFx";
 import { IntermediateRecordSchema } from "~/import-record/schema/IntermediateRecordSchema";
 import { validateRecordFx } from "~/accounting-record/fx/validateRecordFx";
 import { SupplierRecordSchema } from "~/accounting-record/schema/SupplierRecordSchema";
@@ -43,15 +43,17 @@ export const indexTargetFx = Effect.fn("indexTargetFx")(function* (
 		});
 		yield* fs.writeFile(output, bytes);
 	});
-	yield* readKaktusStream({
-		input: data,
-		output: options.output,
-		actor: options.actor,
-		bestEffort: false,
-		encoding: "auto",
-		maxRecordBytes: 1024 * 1024,
-		maxOutputRecordBytes: 1024 * 1024,
-	}).pipe(
+	yield* Stream.unwrap(
+		createKaktusStreamFx({
+			input: data,
+			output: options.output,
+			actor: options.actor,
+			bestEffort: false,
+			encoding: "auto",
+			maxRecordBytes: 1024 * 1024,
+			maxOutputRecordBytes: 1024 * 1024,
+		}),
+	).pipe(
 		Stream.runForEach((candidate) =>
 			Effect.gen(function* () {
 				const envelope = yield* parseRecordFx(

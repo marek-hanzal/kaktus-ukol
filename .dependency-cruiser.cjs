@@ -3,6 +3,16 @@
 module.exports = {
 	forbidden: [
 		{
+			name: "source-imports-use-declared-domain-kinds",
+			severity: "error",
+			from: {},
+			to: {
+				path: "^src/",
+				pathNot:
+					"^src/(?:application-cli/taxy[.]ts|[^/]+/(?:fn|fx|schema|error|service|layer|command|flag)/[^/]+[.]ts)$",
+			},
+		},
+		{
 			name: "no-circular",
 			severity: "error",
 			from: {},
@@ -231,7 +241,7 @@ module.exports = {
 				path: "^src/[^/]+/error/",
 			},
 			to: {
-				path: "^src/[^/]+/(?:fx|layer|service|command|stream)/",
+				path: "^src/[^/]+/(?:fx|layer|service|command)/",
 			},
 		},
 		{
@@ -241,7 +251,7 @@ module.exports = {
 				path: "^src/[^/]+/service/",
 			},
 			to: {
-				path: "^src/[^/]+/(?:fx|layer|command|stream)/",
+				path: "^src/[^/]+/(?:fx|layer|command)/",
 				dependencyTypesNot: [
 					"type-only",
 				],
@@ -254,7 +264,7 @@ module.exports = {
 				path: "^src/[^/]+/fn/",
 			},
 			to: {
-				path: "^src/[^/]+/(?:fx|layer|service|command|stream)/",
+				path: "^src/[^/]+/(?:fx|layer|service|command)/",
 				dependencyTypesNot: [
 					"type-only",
 				],

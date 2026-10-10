@@ -1,10 +1,10 @@
-import { Effect, Path } from "effect";
+import { Effect, Path, Stream } from "effect";
 import { runAuditedFx } from "~/audit-log/fx/runAuditedFx";
 import { checkDataPathsFx } from "~/file-boundary/fx/checkDataPathsFx";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
 import { ImportOptionsSchema } from "../schema/ImportOptionsSchema";
 import { formatBatchSummaryFn } from "~/record-validation/fn/formatBatchSummaryFn";
-import { readIntermediateStream } from "../stream/readIntermediateStream";
+import { createIntermediateStreamFx } from "./createIntermediateStreamFx";
 import { importRecordsFx } from "./importRecordsFx";
 
 /** Select the native intermediate adapter; validation is shared by every source adapter. */
@@ -37,11 +37,13 @@ export const importIntermediateFx = Effect.fn("importIntermediateFx")(function* 
 		},
 		importRecordsFx({
 			bestEffort: options.bestEffort,
-			records: readIntermediateStream({
-				path: input,
-				maxRecordBytes: options.maxRecordBytes,
-				chunkBytes: 16 * 1024,
-			}),
+			records: Stream.unwrap(
+				createIntermediateStreamFx({
+					path: input,
+					maxRecordBytes: options.maxRecordBytes,
+					chunkBytes: 16 * 1024,
+				}),
+			),
 			publication: {
 				output,
 				maxChunkBytes: options.maxOutputRecordBytes + 1,

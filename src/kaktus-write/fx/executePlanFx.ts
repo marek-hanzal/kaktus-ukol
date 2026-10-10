@@ -4,7 +4,7 @@ import { ProcessingLog } from "~/processing-log/service/ProcessingLog";
 import type { PlanSchema } from "../schema/PlanSchema";
 import type { PlanningSummarySchema } from "../schema/PlanningSummarySchema";
 import type { WriteOptionsSchema } from "../schema/WriteOptionsSchema";
-import { readBatchesStream } from "../stream/readBatchesStream";
+import { createBatchesStreamFx } from "./createBatchesStreamFx";
 import { indexTargetFx } from "./indexTargetFx";
 import { storeValueFx } from "./storeValueFx";
 import { confirmBatchFx } from "./confirmBatchFx";
@@ -101,7 +101,7 @@ export const executePlanFx = Effect.fn("executePlanFx")(function* (
 		if (confirmed.unknown > 0 || (confirmed.rejected > 0 && !options.bestEffort))
 			stopped = true;
 	});
-	yield* readBatchesStream(path.join(run, "plan.ndjson")).pipe(
+	yield* Stream.unwrap(createBatchesStreamFx(path.join(run, "plan.ndjson"))).pipe(
 		Stream.runForEach((batch) =>
 			Effect.gen(function* () {
 				if (!stopped) return yield* submitFx(batch);

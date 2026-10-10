@@ -4,7 +4,7 @@ import { IntermediateRecordSchema } from "~/import-record/schema/IntermediateRec
 import { validateRecordFx } from "~/accounting-record/fx/validateRecordFx";
 import { encodeRecordFx } from "~/record-export/fx/encodeRecordFx";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
-import { readIntermediateStream } from "~/record-import/stream/readIntermediateStream";
+import { createIntermediateStreamFx } from "~/record-import/fx/createIntermediateStreamFx";
 import { appendEntryFx } from "~/file-append/fx/appendEntryFx";
 import type { WriteOptionsSchema } from "../schema/WriteOptionsSchema";
 import { WriteError } from "../error/WriteError";
@@ -22,11 +22,13 @@ export const prepareRequestsFx = Effect.fn("prepareRequestsFx")(function* (
 	yield* fs.writeFileString(requests, "");
 	let offices = 0;
 	let rejected = 0;
-	yield* readIntermediateStream({
-		path: options.input,
-		maxRecordBytes: options.maxRecordBytes,
-		chunkBytes: 16 * 1024,
-	}).pipe(
+	yield* Stream.unwrap(
+		createIntermediateStreamFx({
+			path: options.input,
+			maxRecordBytes: options.maxRecordBytes,
+			chunkBytes: 16 * 1024,
+		}),
+	).pipe(
 		Stream.runForEach((candidate) =>
 			Effect.gen(function* () {
 				const envelope = yield* parseRecordFx(

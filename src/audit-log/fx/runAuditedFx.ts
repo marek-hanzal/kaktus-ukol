@@ -28,7 +28,7 @@ export const runAuditedFx = Effect.fn("runAuditedFx")(function* <A, E, R>(
 			timestamp: new Date(now).toISOString(),
 		});
 	});
-	return yield* Effect.uninterruptibleMask((restore) =>
+	return yield* Effect.uninterruptibleMask((restoreFx) =>
 		Effect.gen(function* () {
 			yield* writeFx(
 				"started",
@@ -36,7 +36,7 @@ export const runAuditedFx = Effect.fn("runAuditedFx")(function* <A, E, R>(
 					? "Best-effort requested; caller accepts omitted records and must review the processing log."
 					: "Caller-declared identity; strict operation requested.",
 			);
-			const result = yield* restore(work).pipe(
+			const result = yield* restoreFx(work).pipe(
 				Effect.onError((cause) =>
 					writeFx("failed", formatCauseFn(cause)).pipe(Effect.ignore),
 				),
