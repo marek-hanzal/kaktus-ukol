@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DecimalSchema } from "~/accounting-value/schema/DecimalSchema";
 
 /** Complete VAT row for the documented Kaktus rates; sums require separate exact validation. */
 export const VatLineSchema = z
@@ -8,8 +9,8 @@ export const VatLineSchema = z
 			z.literal(12),
 			z.literal(21),
 		]),
-		base: z.number(),
-		tax: z.number(),
+		base: DecimalSchema,
+		tax: DecimalSchema,
 	})
 	.strict()
 	.meta({

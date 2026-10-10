@@ -8,6 +8,8 @@ import type { ProblemSchema } from "~/record-validation/schema/ProblemSchema";
 import { StageEnumSchema } from "~/record-validation/schema/StageEnumSchema";
 import { ProcessingLog } from "~/processing-log/service/ProcessingLog";
 import { publishFileFx } from "~/file-publication/fx/publishFileFx";
+import { ExportOptionsSchema } from "~/record-export/schema/ExportOptionsSchema";
+import { encodeRecordFx } from "~/record-export/fx/encodeRecordFx";
 import type { PublicationOptionsSchema } from "~/file-publication/schema/PublicationOptionsSchema";
 import type { CandidateSchema } from "../schema/CandidateSchema";
 import type { ImportSummarySchema } from "../schema/ImportSummarySchema";
@@ -16,18 +18,24 @@ import { ImportRejectedError } from "../error/ImportRejectedError";
 interface Props<E, R> {
 	readonly records: Stream.Stream<CandidateSchema.Type, E, R>;
 	readonly publication: PublicationOptionsSchema.Type;
+	readonly exportOptions: ExportOptionsSchema.Type;
 }
 
 /** Source-independent validation and publication, preserving each adapter's E/R. */
 export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 	records,
 	publication: options,
+	exportOptions: inputExportOptions,
 }: Props<E, R>) {
+	const exportOptions = yield* parseRecordFx(
+		ExportOptionsSchema,
+		inputExportOptions,
+		"record export options",
+	);
 	const log = yield* ProcessingLog;
 	let accepted = 0;
 	let rejected = 0;
 	let nextProgress = 1000;
-	const encoder = new TextEncoder();
 	const operation = "record-import";
 	yield* log.writeFx({
 		operation,
@@ -111,7 +119,9 @@ export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 			}),
 		),
 		Stream.filter((record) => record !== null),
-		Stream.map((record) => encoder.encode(`${JSON.stringify(record)}\n`)),
+		Stream.mapEffect((record) => encodeRecordFx(record, exportOptions), {
+			concurrency: 1,
+		}),
 		Stream.onEnd(
 			Effect.suspend(() => {
 				if (rejected > 0)
@@ -149,6 +159,7 @@ export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 		.pipe(Effect.ignore);
 	return {
 		records: accepted,
+		format: exportOptions.format,
 		publication,
 		log: log.path,
 	} satisfies ImportSummarySchema.Type;

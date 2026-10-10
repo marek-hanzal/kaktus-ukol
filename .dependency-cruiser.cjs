@@ -108,7 +108,7 @@ module.exports = {
 				path: "^src/import-record/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|accounting-record|record-import|ndjson)/",
+				path: "^src/(?:kaktus|taxy|accounting-record|record-import|record-export|ndjson)/",
 			},
 		},
 		{
@@ -118,7 +118,7 @@ module.exports = {
 				path: "^src/accounting-record/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|record-import|ndjson)/",
+				path: "^src/(?:kaktus|taxy|record-import|record-export|ndjson)/",
 			},
 		},
 		{
@@ -128,7 +128,17 @@ module.exports = {
 				path: "^src/ndjson/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|record-import|accounting-record|import-record)/",
+				path: "^src/(?:kaktus|taxy|record-import|record-export|accounting-record|import-record)/",
+			},
+		},
+		{
+			name: "output-does-not-import-source-adapters",
+			severity: "error",
+			from: {
+				path: "^src/record-export/",
+			},
+			to: {
+				path: "^src/(?:kaktus|taxy|record-import|ndjson)/",
 			},
 		},
 		{

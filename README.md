@@ -1,26 +1,29 @@
 # Kaktus connector
 
-Portable Node.js 24+ CLI, using Serakki's flat domain ownership, Effect 4 and standalone Zod schemas.
+Portable Node.js 24+ CLI with Serakki's flat domains, Effect 4 and standalone Zod contracts.
 
 ```text
 npm ci
-npm run dev -- import-intermediate examples/intermediate.ndjson --output .out/accounting.ndjson
-npm run dev -- schema intermediate-record --output .out/intermediate.schema.json
-npm run dev -- schema accounting-record --output .out/accounting.schema.json
 npm run check
-node dist/kaktus.mjs import-intermediate examples/intermediate.ndjson --output .out/accounting.ndjson
+node dist/kaktus.mjs import-intermediate examples/intermediate.ndjson --output-format intermediate --output .out/exchange.ndjson
+node dist/kaktus.mjs import-intermediate .out/exchange.ndjson --output .out/reimport.ndjson
+node dist/kaktus.mjs schema intermediate-output --output .out/output.schema.json
 ```
 
-The build produces one ESM bundle including application dependencies; distribution needs Node and input files, without npm packages or a TypeScript loader.
+Development uses `npm run dev -- <command>`. The single ESM bundle includes dependencies; distribution needs only Node and input files.
 
-Intermediate NDJSON is a native input. Each line contains `type`, `source` and `data`; the example covers all variants. Named enums define record types (`company`, `supplier`, `received_invoice`) and origins (`kaktus`, `intermediate`). Replaying a file preserves its original provenance. Unknown business fields, missing values, nulls and wrong types reach domain validation without coercion or defaults. Complete accounting records use English fields and exact decimal strings. Variant routing uses exhaustive ts-pattern matching; Serakki's Biome rule prohibits switch.
+Input, admitted domain records and public output have separate contracts. Intermediate NDJSON contains `type`, `source` and `data`. Named enums define types (`company`, `supplier`, `received_invoice`) and origins (`kaktus`, `intermediate`). Unknown business fields, missing/null values and wrong types reach domain validation without coercion or defaults.
 
-The shared import runner consumes an Effect Stream, retaining adapter errors and requirements. The NDJSON adapter reads sequentially with backpressure, 16 KiB chunks and a 64 KiB line limit, configurable with `--max-record-bytes` up to 1 MiB. LF, CRLF and an unterminated final line work; blank lines are ignored. Future adapters must also bound records and chunks.
+Domain amounts and exchange rates use Effect BigDecimal. Admission requires decimal strings with at most four fractional digits; numbers, exponents and excess precision are rejected without rounding. Source adapters must preserve monetary tokens before decoding. Export uses normalized plain strings, preserving values rather than original spelling. Decimal text is bounded to 1 MiB. Division and business rounding remain unimplemented.
 
-Envelope/domain rejections are scanned and logged individually with input position, stage, logical provenance and field issues. Invalid JSON, UTF-8, oversized lines or I/O failures abort. Any rejection withholds the entire data output. Human logs append to `.out/processing.log`; override with `KAKTUS_LOG_FILE`. Diagnostic failure preserves an original rejection. Progress is logged every 1,000 records. Successful commands return a JSON receipt.
+The `record-export` domain owns strict output schemas and explicit, exhaustive projection, including nested objects. Computed domain values and output are validated before encoding. Intermediate output is accepted by our importer. JSON Schema exports describe JSON admission/output contracts, including decimal strings, rather than in-memory objects.
 
-Publication stages beside the destination, synchronizes, closes and renames. Filesystem atomic replacement is required; universal power-loss durability, concurrent-writer arbitration and orphan recovery remain unimplemented.
+The runner retains adapter E/R and processes sequentially with backpressure. Input uses 16 KiB chunks. Independent record limits default to 64 KiB, configurable up to 1 MiB with `--max-record-bytes` and `--max-output-record-bytes`. Output limits exclude LF. Larger exports require a matching import limit. LF, CRLF and an unterminated final line work; blank lines are ignored.
 
-Validation currently enforces complete structural contracts, not cross-record references, uniqueness, authorization or accounting rules. DBF/XML integration is not implemented. Bounded inspection found CP852 text in supplied DBF samples despite the manual's Windows-1250 claim. Simulator code was neither inspected nor executed.
+Rejections log position, provenance and field issues. Syntax, encoding, size or I/O failures abort. Any rejection withholds the entire output. Human logs append to `.out/processing.log`, overridden by `KAKTUS_LOG_FILE`, with progress every 1,000 records. Success returns a JSON receipt.
 
-AI implemented the foundation. Typechecking caught API/type mistakes; an earlier premature smoke run used a stale bundle. Manual CLI runs verified standalone execution, rejection atomicity, byte limits and UTF-8 boundaries. No automated tests were written, as requested. Human review and Windows/Linux execution remain pending.
+Publication stages beside the destination, synchronizes, closes and renames. Universal power-loss durability, writer arbitration and orphan recovery remain unimplemented.
+
+Cross-record references, uniqueness, authorization, accounting rules and DBF/XML integration remain pending. Supplied DBF samples use CP852 despite the manual. Simulator code was neither inspected nor executed.
+
+AI implemented the foundation; typechecking caught API/type mistakes and an earlier smoke run used a stale bundle. Manual checks cover exact decimals, three-type exchange and atomic rejection. No automated tests were written. Human review and Windows/Linux execution remain pending.

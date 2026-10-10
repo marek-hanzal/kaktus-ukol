@@ -18,9 +18,9 @@ export const ImportInvoiceSchema = z
 		duzp: z.string().nullable().optional(),
 		datumSplatnosti: z.string().nullable().optional(),
 		rozpisDph: ImportVatBreakdownSchema.nullable().optional(),
-		celkem: z.number().nullable().optional(),
+		celkem: z.unknown().optional(),
 		mena: z.string().nullable().optional(),
-		kurz: z.number().nullable().optional(),
+		kurz: z.unknown().optional(),
 		popis: z.string().nullable().optional(),
 	})
 	.strict()

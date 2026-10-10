@@ -40,7 +40,11 @@ export const importIntermediateFx = Effect.fn("importIntermediateFx")(function* 
 		}),
 		publication: {
 			output,
-			maxChunkBytes: options.maxRecordBytes + 1,
+			maxChunkBytes: options.maxOutputRecordBytes + 1,
+		},
+		exportOptions: {
+			format: options.outputFormat,
+			maxRecordBytes: options.maxOutputRecordBytes,
 		},
 	});
 });

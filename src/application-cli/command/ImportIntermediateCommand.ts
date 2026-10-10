@@ -2,6 +2,7 @@ import { Argument, Command, Flag } from "effect/cli";
 import { Console, Effect } from "effect";
 import { importIntermediateFx } from "~/record-import/fx/importIntermediateFx";
 import type { ImportOptionsSchema } from "~/record-import/schema/ImportOptionsSchema";
+import { FormatEnumSchema } from "~/record-export/schema/FormatEnumSchema";
 
 const runImportIntermediateCommandFx = Effect.fn("runImportIntermediateCommandFx")(function* (
 	options: ImportOptionsSchema.Type,
@@ -16,6 +17,18 @@ export const ImportIntermediateCommand = Command.make(
 	{
 		input: Argument.String("input"),
 		output: Flag.String("output").pipe(Flag.withDefault(".out/import.ndjson")),
+		outputFormat: Flag.ChoiceWithValue("output-format", [
+			[
+				FormatEnumSchema.enum.intermediate,
+				FormatEnumSchema.enum.intermediate,
+			],
+		]).pipe(Flag.withDefault(FormatEnumSchema.enum.intermediate)),
+		maxOutputRecordBytes: Flag.Int("max-output-record-bytes").pipe(
+			Flag.withDefault(64 * 1024),
+			Flag.withDescription(
+				"Maximum UTF-8 bytes per exported record, excluding LF; at most 1 MiB.",
+			),
+		),
 		maxRecordBytes: Flag.Int("max-record-bytes").pipe(
 			Flag.withDefault(64 * 1024),
 			Flag.withDescription(
@@ -26,6 +39,6 @@ export const ImportIntermediateCommand = Command.make(
 	runImportIntermediateCommandFx,
 ).pipe(
 	Command.withDescription(
-		"Validate intermediate NDJSON and atomically publish complete accounting records.",
+		"Validate intermediate NDJSON and atomically publish the selected public output format.",
 	),
 );

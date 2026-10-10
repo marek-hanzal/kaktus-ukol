@@ -6,7 +6,7 @@ import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
 import type { RecordValidationError } from "~/record-validation/error/RecordValidationError";
 import { CompanyRecordSchema } from "../schema/CompanyRecordSchema";
 import { SupplierRecordSchema } from "../schema/SupplierRecordSchema";
-import { InvoiceRecordSchema } from "../schema/InvoiceRecordSchema";
+import { InvoiceRecordAdmissionSchema } from "../schema/InvoiceRecordAdmissionSchema";
 import type { RecordSchema } from "../schema/RecordSchema";
 
 /** The only admission boundary from unknown business values to complete accounting records. */
@@ -16,7 +16,7 @@ export const validateRecordFx = Effect.fnUntraced(function* (
 	const schema = match(record.type)
 		.with(TypeEnumSchema.enum.company, () => CompanyRecordSchema)
 		.with(TypeEnumSchema.enum.supplier, () => SupplierRecordSchema)
-		.with(TypeEnumSchema.enum.received_invoice, () => InvoiceRecordSchema)
+		.with(TypeEnumSchema.enum.received_invoice, () => InvoiceRecordAdmissionSchema)
 		.exhaustive();
 	return yield* parseRecordFx(
 		schema,

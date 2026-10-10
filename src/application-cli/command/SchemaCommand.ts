@@ -2,18 +2,19 @@ import { Argument, Command, Flag } from "effect/cli";
 import { Console, Effect, Stream } from "effect";
 import { z } from "zod";
 import { ImportInvoiceSchema } from "~/taxy/schema/ImportInvoiceSchema";
-import { InvoiceSchema as TaxyInvoiceSchema } from "~/taxy/schema/InvoiceSchema";
+import { InvoiceAdmissionSchema as TaxyInvoiceAdmissionSchema } from "~/taxy/schema/InvoiceAdmissionSchema";
 import { ImportOfficeSchema } from "~/taxy/schema/ImportOfficeSchema";
 import { ImportClientSchema } from "~/taxy/schema/ImportClientSchema";
 import { OfficeSchema } from "~/taxy/schema/OfficeSchema";
 import { ClientSchema } from "~/taxy/schema/ClientSchema";
 import { CompanySchema } from "~/accounting-record/schema/CompanySchema";
 import { SupplierSchema } from "~/accounting-record/schema/SupplierSchema";
-import { InvoiceSchema as AccountingInvoiceSchema } from "~/accounting-record/schema/InvoiceSchema";
-import { RecordSchema } from "~/accounting-record/schema/RecordSchema";
+import { InvoiceAdmissionSchema as AccountingInvoiceAdmissionSchema } from "~/accounting-record/schema/InvoiceAdmissionSchema";
+import { RecordAdmissionSchema } from "~/accounting-record/schema/RecordAdmissionSchema";
 import { IntermediateRecordSchema } from "~/import-record/schema/IntermediateRecordSchema";
 import { ProblemSchema } from "~/record-validation/schema/ProblemSchema";
 import { ImportSummarySchema } from "~/record-import/schema/ImportSummarySchema";
+import { IntermediateOutputSchema } from "~/record-export/schema/IntermediateOutputSchema";
 import { publishFileFx } from "~/file-publication/fx/publishFileFx";
 
 const runSchemaCommandFx = Effect.fn("runSchemaCommandFx")(function* ({
@@ -26,6 +27,7 @@ const runSchemaCommandFx = Effect.fn("runSchemaCommandFx")(function* ({
 	const document = JSON.stringify(
 		z.toJSONSchema(schema, {
 			reused: "ref",
+			io: "input",
 		}),
 		null,
 		2,
@@ -51,7 +53,7 @@ export const SchemaCommand = Command.make(
 			],
 			[
 				"taxy-invoice",
-				TaxyInvoiceSchema,
+				TaxyInvoiceAdmissionSchema,
 			],
 			[
 				"taxy-import-office",
@@ -79,7 +81,7 @@ export const SchemaCommand = Command.make(
 			],
 			[
 				"accounting-invoice",
-				AccountingInvoiceSchema,
+				AccountingInvoiceAdmissionSchema,
 			],
 			[
 				"intermediate-record",
@@ -87,7 +89,11 @@ export const SchemaCommand = Command.make(
 			],
 			[
 				"accounting-record",
-				RecordSchema,
+				RecordAdmissionSchema,
+			],
+			[
+				"intermediate-output",
+				IntermediateOutputSchema,
 			],
 			[
 				"validation-problem",
@@ -104,4 +110,8 @@ export const SchemaCommand = Command.make(
 		),
 	},
 	runSchemaCommandFx,
-).pipe(Command.withDescription("Export one named input or domain contract."));
+).pipe(
+	Command.withDescription(
+		"Export the JSON input view of one named input, domain-admission or output contract.",
+	),
+);

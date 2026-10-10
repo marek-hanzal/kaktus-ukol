@@ -1,13 +1,15 @@
+import { BigDecimal } from "effect";
 import { z } from "zod";
 import { IdSchema } from "~/accounting-value/schema/IdSchema";
 import { DateSchema } from "~/accounting-value/schema/DateSchema";
 import { CurrencySchema } from "~/accounting-value/schema/CurrencySchema";
+import { DecimalSchema } from "~/accounting-value/schema/DecimalSchema";
 import { SupplierSchema } from "./SupplierSchema";
 import { BuyerSchema } from "./BuyerSchema";
 import { InvoiceTypeEnumSchema } from "./InvoiceTypeEnumSchema";
 import { InvoiceStatusEnumSchema } from "./InvoiceStatusEnumSchema";
 import { VatBreakdownSchema } from "./VatBreakdownSchema";
-/** Complete TAXY invoice structure; company authorization, exact totals and period admission remain mandatory. */
+/** Admitted TAXY invoice with BigDecimal amounts; authorization, totals and period checks remain mandatory. */
 export const InvoiceSchema = z
 	.object({
 		id: IdSchema,
@@ -22,16 +24,18 @@ export const InvoiceSchema = z
 		taxableOn: DateSchema,
 		dueOn: DateSchema,
 		vat: VatBreakdownSchema,
-		total: z.number(),
+		total: DecimalSchema,
 		currency: CurrencySchema,
-		exchangeRate: z.number().positive().nullable(),
+		exchangeRate: DecimalSchema.refine(BigDecimal.isPositive, {
+			message: "Exchange rate must be positive",
+		}).nullable(),
 		description: z.string(),
 	})
 	.strict()
 	.meta({
 		id: "taxy.InvoiceSchema",
 		description:
-			"Complete TAXY invoice structure; company authorization, exact totals and period admission remain mandatory.",
+			"Admitted TAXY invoice with BigDecimal amounts; authorization, totals and period checks remain mandatory.",
 	});
 export type InvoiceSchema = typeof InvoiceSchema;
 export namespace InvoiceSchema {
