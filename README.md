@@ -13,7 +13,7 @@ node dist/taxy.mjs schema intermediate-output --output .out/output.schema.json
 
 Development uses `npm run dev -- <command>`. The single ESM bundle includes dependencies; distribution needs only Node and input files.
 
-The standalone DBF reader knows framing, not accounting. Only dBase III C/N/D/L are supported. Kaktus maps FIRMY.DBF and each company folder's ADRESAR.DBF/FAKPRI.DBF, preserving physical-row provenance and skipping deleted slots. Samples use CP852 despite the manual; --encoding overrides header encoding. Agreed policy restores leading zeroes in numeric supplier ICO to eight digits. Locks and concurrent-source snapshots are outside this conversion scope.
+The standalone DBF reader knows framing, not accounting. Only dBase III C/N/D/L are supported. Kaktus maps FIRMY.DBF and each company folder's ADRESAR.DBF/FAKPRI.DBF, preserving physical-row provenance and skipping deleted slots. Samples use CP852 despite the manual; --encoding overrides header encoding. Agreed policy restores leading zeroes in numeric supplier ICO to eight digits. Conversion checks FIRMA.LCK; this is not a snapshot. See [lock flow](docs/kaktus-locks.md).
 
 Intermediate NDJSON carries `type`, `source` and loose `data`. Domain admission requires complete, correctly typed values. Output uses explicit projections and is validated before encoding; our importer accepts our export.
 
@@ -23,8 +23,8 @@ Processing is sequential with backpressure. Independent input/output record limi
 
 Records are immutable. `compare-record` accepts exactly one record in each file, requires matching type/company/ID and reports direct `data` property changes. It normalizes decimals and compares direct properties without resolving references or updating records.
 
-Typed canonical log and audit entries pass through human-text printers. Processing logs append to `.out/processing.log`; audits append to `.out/audit.log`. Override these with `KAKTUS_LOG_FILE` and `KAKTUS_AUDIT_FILE`. Data operations require caller-declared `--actor`, which is not authentication. Audit intent is synchronized before reading records; failed completion audit after publication is reported as unconfirmed separately. CLI receipts and difference reports are text.
+Typed logs/audits use human-text printers. Processing logs append to `.out/processing.log`; audits append to `.out/audit.log`. Override these with `KAKTUS_LOG_FILE` and `KAKTUS_AUDIT_FILE`. Data operations require caller-declared `--actor`, which is not authentication. Audit intent is synchronized before reading records; failed completion audit after publication is reported as unconfirmed separately. CLI receipts and difference reports are text.
 
 Publication stages beside the destination, synchronizes, closes and renames atomically. Power-loss durability, writer arbitration, cross-record uniqueness/references and target writes remain pending.
 
-AI implemented these changes. Manual verification covers 92 DBF records, exact exchange, property differences and atomic rejection. No automated tests were written. Windows/Linux execution remains pending.
+AI implemented these changes and inspected simulator lock internals. Manual verification covers 92 DBF records, lock/unlock, exchange and atomic rejection. No automated tests were written. Windows/Linux execution remains pending.

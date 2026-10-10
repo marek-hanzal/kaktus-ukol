@@ -3,6 +3,7 @@ import { TypeEnumSchema } from "~/import-record/schema/TypeEnumSchema";
 import type { ReadOptionsSchema } from "../schema/ReadOptionsSchema";
 import { readCompanyTablesStream } from "./readCompanyTablesStream";
 import { readTableStream } from "./readTableStream";
+import { checkCompanyLocksFx } from "../fx/checkCompanyLocksFx";
 
 /** Walk FIRMY and each company's tables sequentially without collecting rows or company IDs. */
 export const readKaktusStream = (options: ReadOptionsSchema.Type) =>
@@ -31,6 +32,7 @@ export const readKaktusStream = (options: ReadOptionsSchema.Type) =>
 						concurrency: 1,
 					},
 				),
+				Stream.onEnd(checkCompanyLocksFx(root, options)),
 			);
 		}),
 	);
