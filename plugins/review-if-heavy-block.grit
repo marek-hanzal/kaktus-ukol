@@ -1,0 +1,36 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+or {
+	JsFunctionBody(statements=$statements),
+	JsBlockStatement(statements=$statements)
+} where {
+	$statements <: [
+		...,
+
+		JsIfStatement(),
+
+		...,
+
+		JsIfStatement(),
+
+		...,
+
+		JsIfStatement(),
+
+		...,
+
+		JsIfStatement(),
+
+		...,
+
+		JsIfStatement(),
+
+		...,
+
+		JsIfStatement() as $sixth,
+
+		...
+	],
+	register_diagnostic(span=$sixth, message="Six or more `if` statements share this block. Review whether they are variants of one decision; prefer `ts-pattern` for variants, and keep independent guards or validations when clearer.", severity="warn")
+}

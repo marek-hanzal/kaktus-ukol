@@ -1,0 +1,14 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+JsConditionalExpression(test=$test, consequent=$consequent, alternate=$alternate) where {
+	or {
+		$test <: JsConditionalExpression() as $inner,
+		$test <: JsParenthesizedExpression(expression=JsConditionalExpression() as $inner),
+		$consequent <: JsConditionalExpression() as $inner,
+		$consequent <: JsParenthesizedExpression(expression=JsConditionalExpression() as $inner),
+		$alternate <: JsConditionalExpression() as $inner,
+		$alternate <: JsParenthesizedExpression(expression=JsConditionalExpression() as $inner)
+	},
+	register_diagnostic(span=$inner, message="Avoid nested ternaries. Prefer `ts-pattern` with `match(...).with(...).exhaustive()` for multi-branch values; use `if`/`else` for control flow.", severity="error")
+}

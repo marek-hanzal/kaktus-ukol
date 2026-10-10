@@ -1,0 +1,95 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+// Review common five-term chains and four-term mixed groups at the condition root.
+// Nested operators inside calls and nullish fallbacks do not increase the count.
+or {
+	JsIfStatement(test=$condition),
+	JsWhileStatement(test=$condition),
+	JsDoWhileStatement(test=$condition),
+	JsForStatement(test=$condition)
+} where {
+	or {
+		$condition <: or {
+			`$_ && $_ && $_ && $_ && $_`,
+			`($_ && $_ && $_ && $_ && $_)`,
+			`$_ || $_ || $_ || $_ || $_`,
+			`($_ || $_ || $_ || $_ || $_)`,
+			`$_ && ($_ || $_) && $_`,
+			`($_ || $_) && $_ && $_`,
+			`$_ && $_ && ($_ || $_)`,
+			`$_ || ($_ && $_) || $_`,
+			`($_ && $_) || $_ || $_`,
+			`$_ || $_ || ($_ && $_)`
+		},
+		and {
+			$condition <: or {
+				JsLogicalExpression(left=$left, right=$right),
+				JsParenthesizedExpression(expression=JsLogicalExpression(left=$left, right=$right))
+			},
+			or {
+				$left <: or {
+					`$_ && $_ && $_`,
+					`($_ && $_ && $_)`,
+					`$_ || $_ || $_`,
+					`($_ || $_ || $_)`
+				},
+				$right <: or {
+					`$_ && $_ && $_`,
+					`($_ && $_ && $_)`,
+					`$_ || $_ || $_`,
+					`($_ || $_ || $_)`
+				},
+				and {
+					$left <: or {
+						`$_ && $_`,
+						`($_ && $_)`,
+						`$_ || $_`,
+						`($_ || $_)`
+					},
+					$right <: or {
+						`$_ && $_`,
+						`($_ && $_)`,
+						`$_ || $_`,
+						`($_ || $_)`
+					}
+				}
+			},
+			or {
+				and {
+					$condition <: or {
+						`$left && $right`,
+						`($left && $right)`
+					},
+					or {
+						$left <: or {
+							`$_ || $_`,
+							`($_ || $_)`
+						},
+						$right <: or {
+							`$_ || $_`,
+							`($_ || $_)`
+						}
+					}
+				},
+				and {
+					$condition <: or {
+						`$left || $right`,
+						`($left || $right)`
+					},
+					or {
+						$left <: or {
+							`$_ && $_`,
+							`($_ && $_)`
+						},
+						$right <: or {
+							`$_ && $_`,
+							`($_ && $_)`
+						}
+					}
+				}
+			}
+		}
+	},
+	register_diagnostic(span=$condition, message="Review this long or mixed boolean condition. Keep cohesive guards; otherwise split independent checks, name a predicate, or use `ts-pattern` for variants.", severity="warn")
+}

@@ -1,0 +1,6 @@
+engine biome(1.0)
+language js(typescript, jsx)
+
+JsSwitchStatement() as $switch where {
+	register_diagnostic(span=$switch, message="Avoid `switch`. Prefer `ts-pattern` with `match(value).with(...).exhaustive()` for variant decisions; use `if`/`else` for procedural control flow.", severity="error")
+}

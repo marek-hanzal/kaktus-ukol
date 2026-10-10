@@ -1,0 +1,22 @@
+{
+	"threshold": 0,
+	"minLines": 8,
+	"minTokens": 80,
+	"mode": "mild",
+	"path": [
+		"src",
+		"tooling"
+	],
+	"ignore": [
+		"**/*.test.ts",
+		"**/*.test.tsx",
+		"**/*.d.ts",
+		"**/_route.ts",
+		"**/node_modules/**",
+		"**/dist/**"
+	],
+	"reporters": [
+		"console"
+	],
+	"exitCode": 1
+}

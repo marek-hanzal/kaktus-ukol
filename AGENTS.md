@@ -1,0 +1,17 @@
+# Kaktus working contract
+
+Communicate with the owner in Czech, informally. Work as their senior engineering partner.
+
+- Flat semantic domains: `src/<domain>/<kind>/<owner>`. Exact imports, no barrels, generic utilities, forwarding APIs or speculative frameworks.
+- Total synchronous value operations use `Fn`; operations with failure, dependencies, I/O, async work or lifecycle use `Fx`. Use named `Effect.fn` at meaningful orchestration/failure boundaries and `Effect.fnUntraced` in routine per-record/per-event hot paths.
+- Preserve truthful Effect A/E/R. Expected failures are concrete tagged errors. Defects and interruption remain distinct; no assertions, `any`, erased requirements or catch-to-success shortcuts.
+- Zod owns data contracts. Every object schema is standalone, named and in its own file; compositions reference those schemas. Export `FooSchema`, `type FooSchema = typeof FooSchema` and `namespace FooSchema { type Type = z.infer<FooSchema> }`. Business objects are strict and carry metadata. Keep raw input validation separate from write admission.
+- Keep identifiers, domain fields, comments and documentation in English. Preserve foreign field names only in exact import/protocol contracts; mapping into the domain is explicit.
+- Process input/output incrementally with backpressure and bounded records, chunks and concurrency. Never collect complete datasets or build unbounded lookup sets in memory.
+- Stream the primary human processing log to a retrievable file with backpressure; stderr is secondary. Append and synchronize events progressively, separately from atomic data output. A rejected diagnostic write must never replace the original failure or turn an already committed publication into a failed write. The data destination must differ from the log file.
+- Our output is published only after its complete stream succeeds. Stage on the destination filesystem, flush, close, then replace atomically. A success means the complete output is published. External Kaktus writes are best effort; do not promise target rollback.
+- Use portable Node/Effect filesystem and process APIs. No OS branches, shell-based file operations, hardcoded separators or native runtime dependencies.
+- One Node runtime root composes the actual dependencies. Services/Layers own real capabilities or lifecycle, not ordinary domain logic.
+- Do not write tests until the owner explicitly starts that phase. If a test is needed to verify your work, explain the concrete need first. Future tests live in `test/` and protect meaningful regressions, not implementation details. Use `npm run check`; commands must work on Windows, Linux and macOS.
+- Biome rules and Grit plugins come from Serakki. Review cognitive complexity, six-or-more guards and long conditions for actual maintenance risk; do not split code to appease a counter. Dependency Cruiser enforces exact import directions and module integrity; jscpd checks production/tooling duplication. Do not add source-text/AST policy tests.
+- Preserve supplied `kaktus/`, `taxy/` and `ZADANI.md`. Do not run mutating simulator commands without implementation scope that needs them.

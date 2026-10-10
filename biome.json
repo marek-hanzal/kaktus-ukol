@@ -1,0 +1,83 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"ignoreUnknown": true,
+		"includes": [
+			"**/*",
+			"!**/node_modules",
+			"!**/dist",
+			"!**/.out",
+			"!**/coverage",
+			"!kaktus",
+			"!taxy",
+			"!package-lock.json"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"attributePosition": "multiline",
+		"bracketSameLine": false,
+		"bracketSpacing": true,
+		"expand": "always",
+		"formatWithErrors": false,
+		"lineEnding": "lf",
+		"indentWidth": 4,
+		"lineWidth": 100
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "none",
+			"complexity": {
+				"noExcessiveCognitiveComplexity": {
+					"level": "warn",
+					"options": {
+						"maxAllowedComplexity": 40
+					}
+				}
+			},
+			"nursery": {
+				"noUnsafeTypeAssertion": "error"
+			},
+			"style": {
+				"useConst": "warn"
+			},
+			"suspicious": {
+				"noAssignInExpressions": "warn",
+				"noExplicitAny": "warn"
+			}
+		}
+	},
+	"plugins": [
+		"./plugins/no-nested-ternary.grit",
+		"./plugins/no-switch.grit",
+		"./plugins/review-if-heavy-block.grit",
+		"./plugins/review-long-condition.grit"
+	],
+	"assist": {
+		"enabled": false
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"jsxQuoteStyle": "double",
+			"attributePosition": "multiline",
+			"expand": "always",
+			"quoteProperties": "asNeeded",
+			"trailingCommas": "all",
+			"arrowParentheses": "always",
+			"semicolons": "always"
+		}
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	}
+}

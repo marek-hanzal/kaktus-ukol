@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.out/
+coverage/
+.kaktus-staging-*/
+*.tsbuildinfo
+npm-debug.log*
+.DS_Store
+Thumbs.db
+Desktop.ini
