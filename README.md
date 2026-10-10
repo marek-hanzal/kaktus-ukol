@@ -6,13 +6,13 @@ Node.js 24+ CLI using Effect 4/Zod. Mise pins tooling; package.json owns scripts
 mise install
 npm ci
 npm run check
-npm install --global ./dist
-taxy-cli kaktus convert kaktus/DATA --actor developer --output .out/read.ndjson
-taxy-cli example convert taxy --actor developer --best-effort --output .out/example.ndjson
-taxy-cli kaktus import .out/example.ndjson --actor developer --best-effort --output .out/write.txt
+npm install --no-save --package-lock=false ./dist
+npx taxy-cli kaktus convert kaktus/DATA --actor developer --output .out/read.ndjson
+npx taxy-cli example convert taxy --actor developer --best-effort --output .out/example.ndjson
+npx taxy-cli kaktus import .out/example.ndjson --actor developer --best-effort --output .out/write.txt
 ```
 
-The standalone bundle `dist/taxy-cli.mjs` includes dependencies and needs only Node.
+The standalone bundle `dist/taxy-cli.mjs` includes dependencies and needs only Node. `npm run build` creates it; `npm run check` includes that step. Installation does not build it.
 
 Source adapters publish intermediate NDJSON; Kaktus imports it in XML batches of at most 20 invoices. Normalization and target execution have separate receipts/logs; review both. Details: [writing](docs/kaktus-write.md), [conversion](docs/example-json.md). Optional improvements: [TODO](TODO.md).
 
@@ -30,4 +30,4 @@ Before production: authenticated routing, target coordination, real executable i
 
 AI implemented code/documentation and ran manual checks: 92 source records, locks, XML/readback, JSON replay and intermediate submission. AI inspected `kaktus/kaktus.cjs` source to verify the batch limit, import behavior and response semantics. CLI verification caught a missing boolean default. No automated tests were written.
 
-AI instructions: [AGENTS.md](AGENTS.md). Evidence: preserved development conversations [1](https://chatgpt.com/s/cx_6aca353f88288191bae59ab0ccbc71b1), [2](https://chatgpt.com/s/cx_6aca3796edfc8191b379116231f8c1a9), [example data](https://chatgpt.com/s/cx_6aca3834d0088191bdee3014b8bc5723).
+AI instructions: [AGENTS.md](AGENTS.md). Evidence: preserved development conversations [1](https://chatgpt.com/s/cx_6aca353f88288191bae59ab0ccbc71b1), [2](https://chatgpt.com/s/cx_6aca3796edfc8191b379116231f8c1a9), [example data](https://chatgpt.com/s/cx_6aca3834d0088191bdee3014b8bc5723), [architecture](https://chatgpt.com/s/cx_6aca5232a53c8191832b41cd847deda9).

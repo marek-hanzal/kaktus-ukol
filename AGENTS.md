@@ -3,6 +3,7 @@
 Communicate with the owner in Czech, informally. Work as their senior engineering partner.
 
 - The public program is `taxy-cli`: document and invoke application commands as `taxy-cli <command> ...`, with the same interface in npm bin and standalone `dist/taxy-cli.mjs`. Npm scripts own development/tooling, not alternative application commands. This applies to every integration and working thread.
+- README setup uses a local prebuilt-bundle installation and `npx taxy-cli`. Installing `./dist` inside the source checkout must use `--no-save --package-lock=false`; never persist a dependency on the project's own build output. Bundle creation remains explicit through `npm run build` or `npm run check`.
 - Target submission commands use `import`; target-file generation uses `export`. Keep these public command names consistent instead of introducing synonyms such as `write` or `send`.
 - Normalization and target execution are independent operations with separate receipts/logs that must be reviewed. An optional report tool may aggregate their outcomes and vendor responses, but must not couple the processing flow. Report aggregation is a potential improvement, not a current implementation requirement.
 - Mise only pins Node/npm tooling. Keep all runnable project scripts in package.json and invoke them through `npm run <script>`; do not duplicate them as mise tasks. Do not introduce argc, Bash dependencies, coreutils or platform-specific command wrappers. The distributed program needs only Node.
