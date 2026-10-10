@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { CompanyRegistrationNumberSchema } from "~/accounting-value/schema/CompanyRegistrationNumberSchema";
 /** Complete supplier contract; foreign suppliers may have no Czech company identifier. */
-export const SupplierSchema = z
+export const InvoiceSupplierSchema = z
 	.object({
 		name: z.string().min(1),
 		registrationNumber: CompanyRegistrationNumberSchema.nullable(),
@@ -13,11 +13,11 @@ export const SupplierSchema = z
 	})
 	.strict()
 	.meta({
-		id: "taxy.SupplierSchema",
+		id: "accounting-record.InvoiceSupplierSchema",
 		description:
 			"Complete supplier contract; foreign suppliers may have no Czech company identifier.",
 	});
-export type SupplierSchema = typeof SupplierSchema;
-export namespace SupplierSchema {
-	export type Type = z.infer<SupplierSchema>;
+export type InvoiceSupplierSchema = typeof InvoiceSupplierSchema;
+export namespace InvoiceSupplierSchema {
+	export type Type = z.infer<InvoiceSupplierSchema>;
 }

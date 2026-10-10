@@ -108,7 +108,7 @@ module.exports = {
 				path: "^src/import-record/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|dbf|accounting-record|record-import|record-export|record-comparison|ndjson)/",
+				path: "^src/(?:kaktus|taxy|example|dbf|accounting-record|record-import|record-export|record-comparison|ndjson)/",
 			},
 		},
 		{
@@ -118,7 +118,7 @@ module.exports = {
 				path: "^src/accounting-record/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|dbf|record-import|record-export|record-comparison|ndjson)/",
+				path: "^src/(?:kaktus|taxy|example|dbf|record-import|record-export|record-comparison|ndjson)/",
 			},
 		},
 		{
@@ -128,7 +128,7 @@ module.exports = {
 				path: "^src/ndjson/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|record-import|record-export|accounting-record|import-record)/",
+				path: "^src/(?:kaktus|taxy|example|record-import|record-export|accounting-record|import-record)/",
 			},
 		},
 		{
@@ -138,7 +138,7 @@ module.exports = {
 				path: "^src/record-export/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|dbf|record-import|record-comparison|ndjson)/",
+				path: "^src/(?:kaktus|taxy|example|dbf|record-import|record-comparison|ndjson)/",
 			},
 		},
 		{
@@ -159,7 +159,7 @@ module.exports = {
 				path: "^src/record-comparison/",
 			},
 			to: {
-				path: "^src/(?:dbf|kaktus|taxy)/",
+				path: "^src/(?:dbf|kaktus|taxy|example)/",
 			},
 		},
 		{
@@ -169,7 +169,7 @@ module.exports = {
 				path: "^src/audit-log/",
 			},
 			to: {
-				path: "^src/(?:accounting-record|import-record|record-import|record-export|record-comparison|dbf|kaktus|taxy|ndjson)/",
+				path: "^src/(?:accounting-record|import-record|record-import|record-export|record-comparison|dbf|kaktus|taxy|example|ndjson)/",
 			},
 		},
 		{
@@ -179,7 +179,7 @@ module.exports = {
 				path: "^src/file-boundary/",
 			},
 			to: {
-				path: "^src/(?:accounting-record|import-record|record-import|record-export|record-comparison|dbf|kaktus|taxy|ndjson)/",
+				path: "^src/(?:accounting-record|import-record|record-import|record-export|record-comparison|dbf|kaktus|taxy|example|ndjson)/",
 			},
 		},
 		{

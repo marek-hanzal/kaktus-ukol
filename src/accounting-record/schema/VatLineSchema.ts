@@ -14,7 +14,7 @@ export const VatLineSchema = z
 	})
 	.strict()
 	.meta({
-		id: "taxy.VatLineSchema",
+		id: "accounting-record.VatLineSchema",
 		description:
 			"Complete VAT row for the documented Kaktus rates; sums require separate exact validation.",
 	});

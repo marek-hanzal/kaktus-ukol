@@ -4,13 +4,13 @@ import { IdSchema } from "~/accounting-value/schema/IdSchema";
 import { DateSchema } from "~/accounting-value/schema/DateSchema";
 import { CurrencySchema } from "~/accounting-value/schema/CurrencySchema";
 import { DecimalSchema } from "~/accounting-value/schema/DecimalSchema";
-import { SupplierSchema } from "./SupplierSchema";
-import { BuyerSchema } from "./BuyerSchema";
+import { InvoiceSupplierSchema } from "./InvoiceSupplierSchema";
+import { InvoiceBuyerSchema } from "./InvoiceBuyerSchema";
 import { InvoiceTypeEnumSchema } from "./InvoiceTypeEnumSchema";
 import { InvoiceStatusEnumSchema } from "./InvoiceStatusEnumSchema";
 import { VatBreakdownSchema } from "./VatBreakdownSchema";
 /** Admitted TAXY invoice with BigDecimal amounts; authorization, totals and period checks remain mandatory. */
-export const InvoiceSchema = z
+export const InvoiceRequestSchema = z
 	.object({
 		id: IdSchema,
 		clientId: z.int().positive(),
@@ -18,8 +18,8 @@ export const InvoiceSchema = z
 		status: InvoiceStatusEnumSchema,
 		number: z.string().min(1),
 		variableSymbol: z.string(),
-		supplier: SupplierSchema,
-		buyer: BuyerSchema,
+		supplier: InvoiceSupplierSchema,
+		buyer: InvoiceBuyerSchema,
 		issuedOn: DateSchema,
 		taxableOn: DateSchema,
 		dueOn: DateSchema,
@@ -33,11 +33,11 @@ export const InvoiceSchema = z
 	})
 	.strict()
 	.meta({
-		id: "taxy.InvoiceSchema",
+		id: "accounting-record.InvoiceRequestSchema",
 		description:
 			"Admitted TAXY invoice with BigDecimal amounts; authorization, totals and period checks remain mandatory.",
 	});
-export type InvoiceSchema = typeof InvoiceSchema;
-export namespace InvoiceSchema {
-	export type Type = z.infer<InvoiceSchema>;
+export type InvoiceRequestSchema = typeof InvoiceRequestSchema;
+export namespace InvoiceRequestSchema {
+	export type Type = z.infer<InvoiceRequestSchema>;
 }

@@ -7,6 +7,15 @@ export const getIdentityFn = (record: IntermediateOutputSchema.Type): IdentitySc
 			{
 				type: "company",
 			},
+			{
+				type: "office",
+			},
+			{
+				type: "client",
+			},
+			{
+				type: "invoice_request",
+			},
 			({ type, data }) => ({
 				type,
 				companyId: null,

@@ -7,7 +7,7 @@ export const VatLineAdmissionSchema = VatLineSchema.extend({
 	base: DecimalInputSchema,
 	tax: DecimalInputSchema,
 }).meta({
-	id: "taxy.VatLineAdmissionSchema",
+	id: "accounting-record.VatLineAdmissionSchema",
 	description: "Strict decoded TAXY VAT input; monetary text is admitted as BigDecimal.",
 });
 export type VatLineAdmissionSchema = typeof VatLineAdmissionSchema;

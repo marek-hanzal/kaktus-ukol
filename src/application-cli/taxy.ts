@@ -11,6 +11,7 @@ import { FileProcessingLogLayer } from "~/processing-log/layer/FileProcessingLog
 import { CompareRecordCommand } from "./command/CompareRecordCommand";
 import { FileAuditLogLayer } from "~/audit-log/layer/FileAuditLogLayer";
 import { KaktusCommand } from "./command/KaktusCommand";
+import { ExampleCommand } from "./command/ExampleCommand";
 
 const TaxyCommand = Command.make("taxy-cli").pipe(
 	Command.withSubcommands([
@@ -18,6 +19,7 @@ const TaxyCommand = Command.make("taxy-cli").pipe(
 		ImportIntermediateCommand,
 		CompareRecordCommand,
 		KaktusCommand,
+		ExampleCommand,
 	]),
 	Command.withDescription("Local TAXY/Kaktus connector."),
 );

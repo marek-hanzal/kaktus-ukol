@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TypeEnumSchema } from "~/import-record/schema/TypeEnumSchema";
 import { SourceSchema } from "./SourceSchema";
+import { KaktusMetaSchema } from "./KaktusMetaSchema";
 import { CompanyDataSchema } from "./CompanyDataSchema";
 
 /** A complete company on the intermediate output wire. */
@@ -10,6 +11,7 @@ export const CompanyRecordSchema = z
 			"company",
 		]),
 		source: SourceSchema,
+		kaktus: KaktusMetaSchema.optional(),
 		data: CompanyDataSchema,
 	})
 	.strict()

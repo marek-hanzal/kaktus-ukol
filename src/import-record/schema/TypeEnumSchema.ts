@@ -6,6 +6,9 @@ export const TypeEnumSchema = z
 		"company",
 		"supplier",
 		"received_invoice",
+		"office",
+		"client",
+		"invoice_request",
 	])
 	.meta({
 		id: "import-record.TypeEnumSchema",

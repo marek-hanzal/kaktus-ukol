@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TypeEnumSchema } from "~/import-record/schema/TypeEnumSchema";
 import { SourceSchema } from "./SourceSchema";
+import { KaktusMetaSchema } from "./KaktusMetaSchema";
 import { SupplierDataSchema } from "./SupplierDataSchema";
 
 /** A complete supplier on the intermediate output wire. */
@@ -10,6 +11,7 @@ export const SupplierRecordSchema = z
 			"supplier",
 		]),
 		source: SourceSchema,
+		kaktus: KaktusMetaSchema.optional(),
 		data: SupplierDataSchema,
 	})
 	.strict()

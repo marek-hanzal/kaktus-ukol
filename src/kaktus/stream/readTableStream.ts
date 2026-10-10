@@ -7,12 +7,13 @@ import { SourcePathError } from "../error/SourcePathError";
 import { TableMappingError } from "../error/TableMappingError";
 import { toIntermediateFn } from "../fn/toIntermediateFn";
 import { validateTableHeaderFx } from "../fx/validateTableHeaderFx";
+import type { RecordTypeEnumSchema } from "../schema/RecordTypeEnumSchema";
 
 /** Open one table at a time, check its protocol layout, then project independently framed rows. */
 export const readTableStream = (
 	root: string,
 	options: ReaderOptionsSchema.Type,
-	type: TypeEnumSchema.Type,
+	type: RecordTypeEnumSchema.Type,
 	companyId: string | null,
 ) =>
 	Stream.unwrap(

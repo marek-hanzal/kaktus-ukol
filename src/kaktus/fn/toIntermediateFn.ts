@@ -3,6 +3,7 @@ import type { RowSchema } from "~/dbf/schema/RowSchema";
 import type { IntermediateRecordSchema } from "~/import-record/schema/IntermediateRecordSchema";
 import { TypeEnumSchema } from "~/import-record/schema/TypeEnumSchema";
 import { OriginEnumSchema } from "~/import-record/schema/OriginEnumSchema";
+import type { RecordTypeEnumSchema } from "../schema/RecordTypeEnumSchema";
 
 const nullableTextFn = (value: string | undefined): string | null | undefined =>
 	value === "" ? null : value;
@@ -36,7 +37,7 @@ const logicalFn = (value: string | undefined): unknown =>
 /** Explicit protocol projection; business values remain untrusted until accounting admission. */
 export const toIntermediateFn = (
 	row: RowSchema.Type,
-	type: TypeEnumSchema.Type,
+	type: RecordTypeEnumSchema.Type,
 	location: string,
 	companyId: string | null,
 ): IntermediateRecordSchema.Type => {

@@ -1,13 +1,12 @@
 import { z } from "zod";
 
-/** Only an approved TAXY invoice can enter the domain contract. */
 export const InvoiceStatusEnumSchema = z
 	.enum([
-		"approved",
+		"schvaleno",
 	])
 	.meta({
-		id: "taxy.InvoiceStatusEnumSchema",
-		description: "Only an approved TAXY invoice can enter the domain contract.",
+		id: "example.InvoiceStatusEnumSchema",
+		description: "Exact approval status in the supplied JSON protocol.",
 	});
 export type InvoiceStatusEnumSchema = typeof InvoiceStatusEnumSchema;
 export namespace InvoiceStatusEnumSchema {

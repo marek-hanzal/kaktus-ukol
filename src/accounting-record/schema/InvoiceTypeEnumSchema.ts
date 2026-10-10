@@ -6,7 +6,7 @@ export const InvoiceTypeEnumSchema = z
 		"received_invoice",
 	])
 	.meta({
-		id: "taxy.InvoiceTypeEnumSchema",
+		id: "accounting-record.InvoiceTypeEnumSchema",
 		description: "Invoice types supported by the current domain.",
 	});
 export type InvoiceTypeEnumSchema = typeof InvoiceTypeEnumSchema;

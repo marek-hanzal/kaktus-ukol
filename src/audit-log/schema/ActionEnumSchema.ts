@@ -2,6 +2,7 @@ import { z } from "zod";
 export const ActionEnumSchema = z.enum([
 	"import_intermediate",
 	"read_kaktus",
+	"read_example",
 	"compare_record",
 ]);
 export type ActionEnumSchema = typeof ActionEnumSchema;

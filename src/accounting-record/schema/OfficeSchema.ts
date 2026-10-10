@@ -8,7 +8,7 @@ export const OfficeSchema = z
 	})
 	.strict()
 	.meta({
-		id: "taxy.OfficeSchema",
+		id: "accounting-record.OfficeSchema",
 		description: "One TAXY office header, independent of the streamed client records.",
 	});
 export type OfficeSchema = typeof OfficeSchema;

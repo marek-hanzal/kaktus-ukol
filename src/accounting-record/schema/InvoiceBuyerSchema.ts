@@ -1,17 +1,17 @@
 import { z } from "zod";
 import { CompanyRegistrationNumberSchema } from "~/accounting-value/schema/CompanyRegistrationNumberSchema";
 /** Complete buyer identity to be matched against the office mapping and Kaktus. */
-export const BuyerSchema = z
+export const InvoiceBuyerSchema = z
 	.object({
 		name: z.string().min(1),
 		registrationNumber: CompanyRegistrationNumberSchema,
 	})
 	.strict()
 	.meta({
-		id: "taxy.BuyerSchema",
+		id: "accounting-record.InvoiceBuyerSchema",
 		description: "Complete buyer identity to be matched against the office mapping and Kaktus.",
 	});
-export type BuyerSchema = typeof BuyerSchema;
-export namespace BuyerSchema {
-	export type Type = z.infer<BuyerSchema>;
+export type InvoiceBuyerSchema = typeof InvoiceBuyerSchema;
+export namespace InvoiceBuyerSchema {
+	export type Type = z.infer<InvoiceBuyerSchema>;
 }

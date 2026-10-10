@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TypeEnumSchema } from "~/import-record/schema/TypeEnumSchema";
 import { SourceSchema } from "./SourceSchema";
+import { KaktusMetaSchema } from "./KaktusMetaSchema";
 import { InvoiceDataSchema } from "./InvoiceDataSchema";
 
 /** A complete received_invoice on the intermediate output wire. */
@@ -10,6 +11,7 @@ export const InvoiceRecordSchema = z
 			"received_invoice",
 		]),
 		source: SourceSchema,
+		kaktus: KaktusMetaSchema.optional(),
 		data: InvoiceDataSchema,
 	})
 	.strict()

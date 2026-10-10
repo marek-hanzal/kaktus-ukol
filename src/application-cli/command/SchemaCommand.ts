@@ -2,11 +2,11 @@ import { Argument, Command, Flag } from "effect/cli";
 import { Console, Effect, Stream } from "effect";
 import { z } from "zod";
 import { ImportInvoiceSchema } from "~/taxy/schema/ImportInvoiceSchema";
-import { InvoiceAdmissionSchema as TaxyInvoiceAdmissionSchema } from "~/taxy/schema/InvoiceAdmissionSchema";
+import { InvoiceRequestAdmissionSchema } from "~/accounting-record/schema/InvoiceRequestAdmissionSchema";
 import { ImportOfficeSchema } from "~/taxy/schema/ImportOfficeSchema";
 import { ImportClientSchema } from "~/taxy/schema/ImportClientSchema";
-import { OfficeSchema } from "~/taxy/schema/OfficeSchema";
-import { ClientSchema } from "~/taxy/schema/ClientSchema";
+import { OfficeSchema } from "~/accounting-record/schema/OfficeSchema";
+import { ClientSchema } from "~/accounting-record/schema/ClientSchema";
 import { CompanySchema } from "~/accounting-record/schema/CompanySchema";
 import { SupplierSchema } from "~/accounting-record/schema/SupplierSchema";
 import { InvoiceAdmissionSchema as AccountingInvoiceAdmissionSchema } from "~/accounting-record/schema/InvoiceAdmissionSchema";
@@ -19,6 +19,7 @@ import { publishFileFx } from "~/file-publication/fx/publishFileFx";
 
 import { DifferenceSchema } from "~/record-comparison/schema/DifferenceSchema";
 import { EntrySchema as AuditEntrySchema } from "~/audit-log/schema/EntrySchema";
+import { KaktusMetaSchema } from "~/import-record/schema/KaktusMetaSchema";
 
 const runSchemaCommandFx = Effect.fn("runSchemaCommandFx")(function* ({
 	schema,
@@ -51,6 +52,10 @@ export const SchemaCommand = Command.make(
 	{
 		schema: Argument.ChoiceWithValue("contract", [
 			[
+				"kaktus-meta",
+				KaktusMetaSchema,
+			],
+			[
 				"record-difference",
 				DifferenceSchema,
 			],
@@ -64,7 +69,7 @@ export const SchemaCommand = Command.make(
 			],
 			[
 				"taxy-invoice",
-				TaxyInvoiceAdmissionSchema,
+				InvoiceRequestAdmissionSchema,
 			],
 			[
 				"taxy-import-office",

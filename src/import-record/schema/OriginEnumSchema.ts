@@ -5,6 +5,7 @@ export const OriginEnumSchema = z
 	.enum([
 		"kaktus",
 		"intermediate",
+		"example",
 	])
 	.meta({
 		id: "import-record.OriginEnumSchema",

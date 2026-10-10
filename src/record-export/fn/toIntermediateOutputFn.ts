@@ -13,6 +13,15 @@ export const toIntermediateOutputFn = (
 		location: record.source.location,
 		record: record.source.record,
 	};
+	const kaktus =
+		record.kaktus === undefined
+			? undefined
+			: {
+					companyId: record.kaktus.companyId,
+					folder: record.kaktus.folder,
+					supplierId: record.kaktus.supplierId,
+					invoiceId: record.kaktus.invoiceId,
+				};
 	return match(record)
 		.returnType<IntermediateOutputSchema.Type>()
 		.with(
@@ -22,6 +31,7 @@ export const toIntermediateOutputFn = (
 			({ data }) => ({
 				type: TypeEnumSchema.enum.company,
 				source,
+				kaktus,
 				data: {
 					id: data.id,
 					name: data.name,
@@ -39,6 +49,7 @@ export const toIntermediateOutputFn = (
 			({ data }) => ({
 				type: TypeEnumSchema.enum.supplier,
 				source,
+				kaktus,
 				data: {
 					companyId: data.companyId,
 					id: data.id,
@@ -61,6 +72,7 @@ export const toIntermediateOutputFn = (
 			({ data }) => ({
 				type: TypeEnumSchema.enum.received_invoice,
 				source,
+				kaktus,
 				data: {
 					companyId: data.companyId,
 					id: data.id,
@@ -85,6 +97,79 @@ export const toIntermediateOutputFn = (
 						data.exchangeRate === null ? null : formatDecimalFn(data.exchangeRate),
 					text: data.text,
 					note: data.note,
+				},
+			}),
+		)
+		.with(
+			{
+				type: TypeEnumSchema.enum.office,
+			},
+			({ data }) => ({
+				type: TypeEnumSchema.enum.office,
+				source,
+				kaktus,
+				data: {
+					id: data.id,
+					name: data.name,
+				},
+			}),
+		)
+		.with(
+			{
+				type: TypeEnumSchema.enum.client,
+			},
+			({ data }) => ({
+				type: TypeEnumSchema.enum.client,
+				source,
+				kaktus,
+				data: {
+					id: data.id,
+					name: data.name,
+					registrationNumber: data.registrationNumber,
+				},
+			}),
+		)
+		.with(
+			{
+				type: TypeEnumSchema.enum.invoice_request,
+			},
+			({ data }) => ({
+				type: TypeEnumSchema.enum.invoice_request,
+				source,
+				kaktus,
+				data: {
+					id: data.id,
+					clientId: data.clientId,
+					type: data.type,
+					status: data.status,
+					number: data.number,
+					variableSymbol: data.variableSymbol,
+					supplier: {
+						name: data.supplier.name,
+						registrationNumber: data.supplier.registrationNumber,
+						taxNumber: data.supplier.taxNumber,
+						street: data.supplier.street,
+						city: data.supplier.city,
+						postalCode: data.supplier.postalCode,
+						country: data.supplier.country,
+					},
+					buyer: {
+						name: data.buyer.name,
+						registrationNumber: data.buyer.registrationNumber,
+					},
+					issuedOn: data.issuedOn,
+					taxableOn: data.taxableOn,
+					dueOn: data.dueOn,
+					vat: data.vat.map((line) => ({
+						rate: line.rate,
+						base: formatDecimalFn(line.base),
+						tax: formatDecimalFn(line.tax),
+					})),
+					total: formatDecimalFn(data.total),
+					currency: data.currency,
+					exchangeRate:
+						data.exchangeRate === null ? null : formatDecimalFn(data.exchangeRate),
+					description: data.description,
 				},
 			}),
 		)

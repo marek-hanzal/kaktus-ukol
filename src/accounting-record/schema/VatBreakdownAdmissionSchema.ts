@@ -3,7 +3,7 @@ import { VatLineAdmissionSchema } from "./VatLineAdmissionSchema";
 
 /** Complete bounded TAXY VAT input with exact decimal admission. */
 export const VatBreakdownAdmissionSchema = z.array(VatLineAdmissionSchema).min(1).max(32).meta({
-	id: "taxy.VatBreakdownAdmissionSchema",
+	id: "accounting-record.VatBreakdownAdmissionSchema",
 	description: "Complete bounded TAXY VAT input with exact decimal admission.",
 });
 export type VatBreakdownAdmissionSchema = typeof VatBreakdownAdmissionSchema;

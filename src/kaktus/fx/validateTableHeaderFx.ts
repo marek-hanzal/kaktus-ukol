@@ -7,11 +7,12 @@ import { SupplierFieldsSchema } from "../schema/SupplierFieldsSchema";
 import { InvoiceFieldsSchema } from "../schema/InvoiceFieldsSchema";
 import { TableMappingError } from "../error/TableMappingError";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
+import type { RecordTypeEnumSchema } from "../schema/RecordTypeEnumSchema";
 
 /** Verify the known table's protocol signature before projecting its values. */
 export const validateTableHeaderFx = Effect.fn("validateTableHeaderFx")(function* (
 	header: HeaderSchema.Type,
-	requested: TypeEnumSchema.Type,
+	requested: RecordTypeEnumSchema.Type,
 	path: string,
 ) {
 	const layout = Object.fromEntries(

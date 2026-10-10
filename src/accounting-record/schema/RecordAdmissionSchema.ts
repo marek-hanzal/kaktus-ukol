@@ -1,3 +1,6 @@
+import { InvoiceRequestRecordAdmissionSchema } from "./InvoiceRequestRecordAdmissionSchema";
+import { ClientRecordSchema } from "./ClientRecordSchema";
+import { OfficeRecordSchema } from "./OfficeRecordSchema";
 import { z } from "zod";
 import { CompanyRecordSchema } from "./CompanyRecordSchema";
 import { SupplierRecordSchema } from "./SupplierRecordSchema";
@@ -6,6 +9,9 @@ import { InvoiceRecordAdmissionSchema } from "./InvoiceRecordAdmissionSchema";
 /** Strict JSON admission contract whose output is a complete internal accounting record. */
 export const RecordAdmissionSchema = z
 	.discriminatedUnion("type", [
+		OfficeRecordSchema,
+		ClientRecordSchema,
+		InvoiceRequestRecordAdmissionSchema,
 		CompanyRecordSchema,
 		SupplierRecordSchema,
 		InvoiceRecordAdmissionSchema,
