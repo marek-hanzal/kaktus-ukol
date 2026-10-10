@@ -1,31 +1,29 @@
 # taxy-cli
 
-Portable Node.js 24+ CLI using Effect 4 and standalone Zod contracts.
+Node.js 24+ CLI using Effect 4/Zod. Mise pins tooling; package.json owns scripts.
 
 ```text
 mise install
 npm ci
 npm run check
 npm install --global ./dist
-taxy-cli kaktus convert kaktus/DATA --actor developer --output .out/kaktus.intermediate.jsonl
-node dist/taxy-cli.mjs import-intermediate examples/intermediate.ndjson --actor developer --output .out/exchange.ndjson
-node dist/taxy-cli.mjs compare-record current.ndjson incoming.ndjson --actor developer --output .out/difference.log
+taxy-cli kaktus convert kaktus/DATA --actor developer --output .out/read.ndjson
+taxy-cli kaktus export examples/intermediate.ndjson --company 0001 --actor developer --output .out/batch.xml
+node kaktus/kaktus.cjs import .out/batch.xml
 ```
 
-Mise only pins Node 24.19.0/npm 12.0.2. Scripts live in package.json: `npm run dev -- <command>` or `npm run start -- <command>`. The bundle needs only Node and input files.
+Development: `npm run dev -- <command>`. Standalone: `node dist/taxy-cli.mjs <command>`.
 
-The standalone DBF reader knows framing, not accounting. Only dBase III C/N/D/L are supported. Kaktus maps FIRMY.DBF and each company folder's ADRESAR.DBF/FAKPRI.DBF, preserving physical-row provenance and skipping deleted slots. Samples use CP852 despite the manual; --encoding overrides header encoding. Agreed policy restores leading zeroes in numeric supplier ICO to eight digits. Conversion checks FIRMA.LCK; this is not a snapshot. See [lock flow](docs/kaktus-locks.md).
+Reading exports both companies, suppliers and received invoices to reusable intermediate NDJSON. Writing currently generates XML from intermediate records; the last command manually invokes Kaktus. Automated TAXY submission, per-document response handling and idempotent retries remain pending.
 
-Intermediate NDJSON carries `type`, `source` and loose `data`. Domain admission requires complete, correctly typed values. Output uses explicit projections and is validated before encoding; our importer accepts our export.
+Bounded streams pass strict domain validation; any rejection withholds the complete local output. Local publication is atomic; Kaktus may partially accept a batch. Human processing/audit logs append to `.out/processing.log` and `.out/audit.log`; `--actor` is caller-declared.
 
-Amounts and exchange rates use Effect BigDecimal internally. Admission requires plain decimal strings with at most four fractional digits; numbers, exponents and excess precision are rejected without rounding. Export normalizes spelling without changing values. Decimal text is bounded to 1 MiB. Division and business rounding remain unimplemented.
+Decisions: immutable admitted records, exact BigDecimal strings with at most four fractional digits, rejection without rounding, numeric supplier registration IDs padded to eight digits. Busy companies abort reading; lock checks do not guarantee a snapshot.
 
-Processing is sequential with backpressure. Independent input/output record limits default to 64 KiB and allow up to 1 MiB through `--max-record-bytes` and `--max-output-record-bytes`. Independent business rejections produce field diagnostics; syntax, encoding, size or I/O failures abort. Any rejection withholds the complete output.
+Observed: DBF uses CP852; XML requires Windows-1250 and two-place amounts. Reimport creates duplicates; exit 0 can include rejected documents. Inspect `.odpoved.xml`. Details: [locks](docs/kaktus-locks.md), [XML findings](docs/kaktus-xml.md).
 
-Records are immutable. `compare-record` accepts exactly one record in each file, requires matching type/company/ID and reports direct `data` property changes. It normalizes decimals and compares direct properties without resolving references or updating records.
+Before production: authenticated routing, consistent source/target coordination, durable retry reconciliation, regression tests and Windows/Linux verification.
 
-Typed logs/audits use human-text printers. Processing logs append to `.out/processing.log`; audits append to `.out/audit.log`. Override these with `KAKTUS_LOG_FILE` and `KAKTUS_AUDIT_FILE`. Data operations require caller-declared `--actor`, which is not authentication. Audit intent is synchronized before reading records; failed completion audit after publication is reported as unconfirmed separately. CLI receipts and difference reports are text.
+AI implemented code/documentation and ran manual checks: 92 source records, locks, XML/readback and atomic rejection. Simulator lock internals were inspected. Initial packaging exposed dependency conflicts; distribution now uses a separate bundle manifest. No automated tests were written.
 
-Publication stages beside the destination, synchronizes, closes and renames atomically. Power-loss durability, writer arbitration, cross-record uniqueness/references and target writes remain pending.
-
-AI implemented these changes and inspected simulator lock internals. Manual verification covers 92 DBF records, lock/unlock, exchange and atomic rejection. No automated tests were written. Windows/Linux execution remains pending.
+AI instructions: [AGENTS.md](AGENTS.md). Evidence: [preserved development conversation](https://chatgpt.com/s/cx_6aca353f88288191bae59ab0ccbc71b1).

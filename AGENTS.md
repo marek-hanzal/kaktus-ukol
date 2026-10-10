@@ -4,6 +4,7 @@ Communicate with the owner in Czech, informally. Work as their senior engineerin
 
 - The public program is `taxy-cli`: CLI usage, npm bin and standalone `dist/taxy-cli.mjs` must agree. This applies to every integration and working thread.
 - Mise only pins Node/npm tooling. Keep all runnable project scripts in package.json and invoke them through `npm run <script>`; do not duplicate them as mise tasks. Do not introduce argc, Bash dependencies, coreutils or platform-specific command wrappers. The distributed program needs only Node.
+- Keep README.md compact and comfortably below the assignment's 400-word limit. Preserve supplied archived development/evidence links; keep detailed protocol findings in docs/.
 - Flat semantic domains: `src/<domain>/<kind>/<owner>`. Exact imports, no barrels, generic utilities, forwarding APIs or speculative frameworks.
 - Total synchronous value operations use `Fn`; operations with failure, dependencies, I/O, async work or lifecycle use `Fx`. Use named `Effect.fn` at meaningful orchestration/failure boundaries and `Effect.fnUntraced` in routine per-record/per-event hot paths.
 - Preserve truthful Effect A/E/R. Expected failures are concrete tagged errors. Defects and interruption remain distinct; no assertions, `any`, erased requirements or catch-to-success shortcuts.
