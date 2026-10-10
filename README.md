@@ -1,17 +1,18 @@
-# Kaktus connector
+# taxy-cli
 
-Portable Node.js 24+ CLI using Serakki's flat domains, Effect 4 and standalone Zod contracts.
+Portable Node.js 24+ CLI using Effect 4 and standalone Zod contracts.
 
 ```text
+mise install
 npm ci
 npm run check
-node dist/taxy.mjs kaktus convert kaktus/DATA --actor developer --output .out/kaktus.intermediate.jsonl
-node dist/taxy.mjs import-intermediate examples/intermediate.ndjson --actor developer --output .out/exchange.ndjson
-node dist/taxy.mjs compare-record current.ndjson incoming.ndjson --actor developer --output .out/difference.log
-node dist/taxy.mjs schema intermediate-output --output .out/output.schema.json
+npm install --global ./dist
+taxy-cli kaktus convert kaktus/DATA --actor developer --output .out/kaktus.intermediate.jsonl
+node dist/taxy-cli.mjs import-intermediate examples/intermediate.ndjson --actor developer --output .out/exchange.ndjson
+node dist/taxy-cli.mjs compare-record current.ndjson incoming.ndjson --actor developer --output .out/difference.log
 ```
 
-Development uses `npm run dev -- <command>`. The single ESM bundle includes dependencies; distribution needs only Node and input files.
+Mise only pins Node 24.19.0/npm 12.0.2. Scripts live in package.json: `npm run dev -- <command>` or `npm run start -- <command>`. The bundle needs only Node and input files.
 
 The standalone DBF reader knows framing, not accounting. Only dBase III C/N/D/L are supported. Kaktus maps FIRMY.DBF and each company folder's ADRESAR.DBF/FAKPRI.DBF, preserving physical-row provenance and skipping deleted slots. Samples use CP852 despite the manual; --encoding overrides header encoding. Agreed policy restores leading zeroes in numeric supplier ICO to eight digits. Conversion checks FIRMA.LCK; this is not a snapshot. See [lock flow](docs/kaktus-locks.md).
 

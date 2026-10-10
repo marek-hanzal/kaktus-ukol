@@ -5,6 +5,9 @@ coverage/
 .kaktus-staging-*/
 *.tsbuildinfo
 npm-debug.log*
+.env.local
+mise.local.toml
+.mise.local.toml
 .DS_Store
 Thumbs.db
 Desktop.ini

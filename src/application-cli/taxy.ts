@@ -12,7 +12,7 @@ import { CompareRecordCommand } from "./command/CompareRecordCommand";
 import { FileAuditLogLayer } from "~/audit-log/layer/FileAuditLogLayer";
 import { KaktusCommand } from "./command/KaktusCommand";
 
-const TaxyCommand = Command.make("taxy").pipe(
+const TaxyCommand = Command.make("taxy-cli").pipe(
 	Command.withSubcommands([
 		SchemaCommand,
 		ImportIntermediateCommand,
