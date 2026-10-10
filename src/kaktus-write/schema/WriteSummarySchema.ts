@@ -5,7 +5,7 @@ export const WriteSummarySchema = z
 	.object({
 		bestEffort: z.boolean(),
 		written: z.int().nonnegative(),
-		alreadyWritten: z.int().nonnegative(),
+		alreadyPresent: z.int().nonnegative(),
 		rejected: z.int().nonnegative(),
 		notAttempted: z.int().nonnegative(),
 		unknown: z.int().nonnegative(),

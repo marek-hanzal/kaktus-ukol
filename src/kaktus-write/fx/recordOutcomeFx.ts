@@ -22,7 +22,7 @@ export const recordOutcomeFx = Effect.fnUntraced(function* (
 	yield* log.writeFx({
 		operation: "kaktus-write",
 		phase:
-			outcome.status === "written" || outcome.status === "already_written"
+			outcome.status === "written" || outcome.status === "already_present"
 				? "progress"
 				: "failed",
 		message: formatOutcomeFn(outcome).trimEnd(),

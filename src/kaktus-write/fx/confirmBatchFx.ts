@@ -3,77 +3,88 @@ import { match } from "ts-pattern";
 import type { PlanSchema } from "../schema/PlanSchema";
 import type { ResponseDocumentSchema } from "../schema/ResponseDocumentSchema";
 import type { OutcomeSchema } from "../schema/OutcomeSchema";
-import { WriteError } from "../error/WriteError";
+import { formatTargetComparisonFn } from "../fn/formatTargetComparisonFn";
+import { compareTargetFx } from "./compareTargetFx";
 import { recordOutcomeFx } from "./recordOutcomeFx";
-import { storeAttemptFx } from "./storeAttemptFx";
-import { storeValueFx } from "./storeValueFx";
 
-/** Confirm only a complete admitted response, preserving source identity for every ordinal. */
+/** Actual persisted invoice properties are authoritative, even if the response was lost. */
 export const confirmBatchFx = Effect.fn("confirmBatchFx")(function* (
 	run: string,
-	state: string,
-	xml: string,
-	response: string,
+	inventory: string | null,
 	plans: readonly PlanSchema.Type[],
-	documents: readonly ResponseDocumentSchema.Type[],
+	documents: readonly ResponseDocumentSchema.Type[] | null,
+	diagnostic: string | null,
 ) {
-	yield* storeValueFx(`${response}.results.json`, documents);
-	let written = 0;
-	let rejected = 0;
-	for (const document of documents) {
-		const plan = plans[document.poradi - 1];
-		if (plan === undefined)
-			return yield* Effect.fail(
-				new WriteError({
-					detail: "Admitted response ordinal has no source request",
-				}),
-			);
-		const outcome = match(document)
-			.returnType<OutcomeSchema.Type>()
+	const counts = {
+		written: 0,
+		rejected: 0,
+		unknown: 0,
+	};
+	for (const [index, plan] of plans.entries()) {
+		const comparison =
+			inventory === null
+				? null
+				: yield* compareTargetFx(inventory, plan.businessKey, plan.invoice);
+		const document = documents?.[index];
+		const rejection =
+			comparison?.status === "missing" && document?.stav === "CHYBA" ? document : null;
+		const status = match({
+			present: comparison?.status === "present",
+			rejected: rejection !== null,
+		})
+			.returnType<"written" | "rejected" | "unknown">()
 			.with(
 				{
-					stav: "OK",
+					present: true,
 				},
-				(document) => ({
-					source: plan.source,
-					requestId: plan.requestId,
-					companyId: plan.companyId,
-					status: "written",
-					code: "OK",
-					detail: "Confirmed by Kaktus response",
-					documentNumber: document.doklad,
-				}),
+				() => "written",
 			)
 			.with(
 				{
-					stav: "CHYBA",
+					present: false,
+					rejected: true,
 				},
-				(document) => ({
-					source: plan.source,
-					requestId: plan.requestId,
-					companyId: plan.companyId,
-					status: "rejected",
-					code: document.kod,
-					detail: document.zprava,
-					documentNumber: null,
-				}),
+				() => "rejected",
+			)
+			.with(
+				{
+					present: false,
+					rejected: false,
+				},
+				() => "unknown",
 			)
 			.exhaustive();
-		yield* storeAttemptFx(state, plan, {
+		const outcome: OutcomeSchema.Type = {
+			source: plan.source,
 			requestId: plan.requestId,
 			companyId: plan.companyId,
-			fingerprint: plan.fingerprint,
-			status: document.stav === "OK" ? "written" : "rejected",
-			documentNumber: outcome.documentNumber,
-			run,
-			batch: xml,
-		});
+			status,
+			code:
+				rejection?.kod ??
+				(status === "written" ? "VERIFIED_READBACK" : "unconfirmed_target_write"),
+			detail: [
+				comparison === null
+					? "Target readback failed"
+					: formatTargetComparisonFn(comparison),
+				rejection?.zprava,
+				diagnostic,
+			]
+				.filter((value) => value !== undefined && value !== null)
+				.join("; "),
+			documentNumber: status === "written" ? (comparison?.documentNumber ?? null) : null,
+		};
 		yield* recordOutcomeFx(run, outcome);
-		if (document.stav === "OK") written += 1;
-		else rejected += 1;
+		match(status)
+			.with("written", () => {
+				counts.written += 1;
+			})
+			.with("rejected", () => {
+				counts.rejected += 1;
+			})
+			.with("unknown", () => {
+				counts.unknown += 1;
+			})
+			.exhaustive();
 	}
-	return {
-		written,
-		rejected,
-	};
+	return counts;
 });

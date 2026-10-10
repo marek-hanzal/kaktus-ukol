@@ -12,6 +12,8 @@ import { businessIdentityFn } from "../fn/businessIdentityFn";
 import { hashValueFx } from "./hashValueFx";
 import { readStoredValueFx } from "./readStoredValueFx";
 import { storeValueFx } from "./storeValueFx";
+import { TargetEntrySchema } from "../schema/TargetEntrySchema";
+import { projectTargetInvoiceFn } from "../fn/projectTargetInvoiceFn";
 
 /** Read-only DBF inventory; all target lookups stay on disk. */
 export const indexTargetFx = Effect.fn("indexTargetFx")(function* (
@@ -21,6 +23,9 @@ export const indexTargetFx = Effect.fn("indexTargetFx")(function* (
 ) {
 	const fs = yield* FileSystem.FileSystem;
 	const path = yield* Path.Path;
+	yield* fs.makeDirectory(directory, {
+		recursive: true,
+	});
 	const storeRecordFx = Effect.fnUntraced(function* (
 		name: string,
 		record: Parameters<typeof encodeRecordFx>[0],
@@ -94,10 +99,22 @@ export const indexTargetFx = Effect.fn("indexTargetFx")(function* (
 									),
 								);
 								const output = path.join(directory, `existing-${key}.json`);
-								if (!(yield* fs.exists(output)))
-									yield* storeValueFx(output, {
-										documentNumber: invoice.data.documentNumber,
-									});
+								const previous = (yield* fs.exists(output))
+									? yield* readStoredValueFx(output, TargetEntrySchema)
+									: null;
+								const entry = yield* parseRecordFx(
+									TargetEntrySchema,
+									{
+										count: (previous?.count ?? 0) + 1,
+										documentNumber:
+											previous?.documentNumber ?? invoice.data.documentNumber,
+										invoice:
+											previous?.invoice ??
+											projectTargetInvoiceFn(invoice.data),
+									},
+									"target inventory entry",
+								);
+								yield* storeValueFx(output, entry);
 							}),
 					)
 					.with(

@@ -7,8 +7,6 @@ export const PlanSchema = z
 		requestId: z.string().min(1),
 		companyId: CompanyIdSchema,
 		source: SourceSchema,
-		fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
-		requestKey: z.string().regex(/^[a-f0-9]{64}$/),
 		businessKey: z.string().regex(/^[a-f0-9]{64}$/),
 		invoice: KaktusInvoiceSchema,
 	})

@@ -15,7 +15,7 @@ export const OutcomeSchema = z
 	.strict()
 	.refine(
 		(outcome) => {
-			const confirmed = outcome.status === "written" || outcome.status === "already_written";
+			const confirmed = outcome.status === "written" || outcome.status === "already_present";
 			return confirmed
 				? outcome.requestId !== null &&
 						outcome.companyId !== null &&

@@ -8,7 +8,6 @@ import { formatCauseFn } from "~/text-output/fn/formatCauseFn";
 import { escapeLineFn } from "~/text-output/fn/escapeLineFn";
 import { WriteOptionsSchema } from "../schema/WriteOptionsSchema";
 import type { WriteSummarySchema } from "../schema/WriteSummarySchema";
-import { WriteError } from "../error/WriteError";
 import { formatWriteSummaryFn } from "../fn/formatWriteSummaryFn";
 import { hashValueFx } from "./hashValueFx";
 import { storeValueFx } from "./storeValueFx";
@@ -76,24 +75,6 @@ export const writeKaktusFx = Effect.fn("writeKaktusFx")(function* (input: WriteO
 				yield* fs.makeDirectory(state, {
 					recursive: true,
 				});
-				const lock = path.join(state, "writer.lock");
-				yield* Effect.acquireRelease(
-					fs.makeDirectory(lock).pipe(
-						Effect.mapError((error) =>
-							error.reason._tag === "AlreadyExists"
-								? new WriteError({
-										detail: `Writer lock exists: ${lock}. Review the previous run before manually removing a stale lock; no automatic takeover.`,
-									})
-								: error,
-						),
-					),
-					() =>
-						fs
-							.remove(lock, {
-								recursive: true,
-							})
-							.pipe(Effect.ignore),
-				);
 				const target = path.join(
 					state,
 					yield* hashValueFx([
@@ -107,10 +88,6 @@ export const writeKaktusFx = Effect.fn("writeKaktusFx")(function* (input: WriteO
 				const run = path.join(target, "runs", yield* crypto.randomUUIDv4);
 				yield* fs.makeDirectory(run, {
 					recursive: true,
-				});
-				yield* storeValueFx(path.join(lock, "owner.json"), {
-					run,
-					actor: options.actor,
 				});
 				yield* storeValueFx(path.join(run, "invocation.json"), {
 					...options,
@@ -131,12 +108,13 @@ export const writeKaktusFx = Effect.fn("writeKaktusFx")(function* (input: WriteO
 					},
 					run,
 				);
-				yield* indexTargetFx(data, run, options);
-				const planning = yield* planRequestsFx(run, target, rejected);
+				const inventory = path.join(run, "target-before");
+				yield* indexTargetFx(data, inventory, options);
+				const planning = yield* planRequestsFx(run, inventory, rejected);
 				yield* log.writeFx({
 					operation: "kaktus-write",
 					phase: "progress",
-					message: `Admission complete: ${planning.planned} ready, ${planning.rejected} rejected, ${planning.alreadyWritten} already written.${planning.rejected > 0 ? " REVIEW REQUIRED." : ""}`,
+					message: `Admission complete: ${planning.planned} ready, ${planning.rejected} rejected, ${planning.alreadyPresent} already present.${planning.rejected > 0 ? " REVIEW REQUIRED." : ""}`,
 				});
 				const batches = yield* prepareBatchesFx(run);
 				yield* log.writeFx({
@@ -150,7 +128,6 @@ export const writeKaktusFx = Effect.fn("writeKaktusFx")(function* (input: WriteO
 						simulator,
 					},
 					run,
-					target,
 					data,
 					planning,
 				);

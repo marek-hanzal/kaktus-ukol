@@ -2,7 +2,7 @@ import { z } from "zod";
 export const OutcomeStatusEnumSchema = z
 	.enum([
 		"written",
-		"already_written",
+		"already_present",
 		"rejected",
 		"not_attempted",
 		"unknown",

@@ -3,7 +3,7 @@ export const PlanningSummarySchema = z
 	.object({
 		planned: z.int().nonnegative(),
 		rejected: z.int().nonnegative(),
-		alreadyWritten: z.int().nonnegative(),
+		alreadyPresent: z.int().nonnegative(),
 	})
 	.strict()
 	.meta({

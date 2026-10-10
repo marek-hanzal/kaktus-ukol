@@ -16,7 +16,7 @@ const runImportKaktusCommandFx = Effect.fn("runImportKaktusCommandFx")(function*
 	);
 	const unconfirmed = summary.unknown + summary.notAttempted > 0;
 	const strictRejection = !options.bestEffort && summary.rejected > 0;
-	const noSuccessfulWrites = summary.written + summary.alreadyWritten === 0;
+	const noSuccessfulWrites = summary.written + summary.alreadyPresent === 0;
 	if (unconfirmed || strictRejection || noSuccessfulWrites)
 		return yield* Effect.fail(
 			new WriteError({
@@ -39,7 +39,7 @@ export const ImportKaktusCommand = Command.make(
 		state: Flag.String("state").pipe(
 			Flag.withDefault(".out/kaktus-write-state"),
 			Flag.withDescription(
-				"Retained intent, response and outcome directory; keep it across runs.",
+				"Retained run evidence; fresh target data determines replay, independently of this directory.",
 			),
 		),
 		actor: Flag.String("actor"),
