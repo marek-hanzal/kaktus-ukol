@@ -108,7 +108,7 @@ module.exports = {
 				path: "^src/import-record/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|accounting-record|record-import|record-export|ndjson)/",
+				path: "^src/(?:kaktus|taxy|dbf|accounting-record|record-import|record-export|record-comparison|ndjson)/",
 			},
 		},
 		{
@@ -118,7 +118,7 @@ module.exports = {
 				path: "^src/accounting-record/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|record-import|record-export|ndjson)/",
+				path: "^src/(?:kaktus|taxy|dbf|record-import|record-export|record-comparison|ndjson)/",
 			},
 		},
 		{
@@ -138,7 +138,59 @@ module.exports = {
 				path: "^src/record-export/",
 			},
 			to: {
-				path: "^src/(?:kaktus|taxy|record-import|ndjson)/",
+				path: "^src/(?:kaktus|taxy|dbf|record-import|record-comparison|ndjson)/",
+			},
+		},
+		{
+			name: "dbf-reader-does-not-import-business-or-operation-domains",
+			severity: "error",
+			from: {
+				path: "^src/dbf/",
+			},
+			to: {
+				path: "^src/",
+				pathNot: "^src/(?:dbf|record-validation)/",
+			},
+		},
+		{
+			name: "comparison-does-not-import-source-adapters",
+			severity: "error",
+			from: {
+				path: "^src/record-comparison/",
+			},
+			to: {
+				path: "^src/(?:dbf|kaktus|taxy)/",
+			},
+		},
+		{
+			name: "audit-does-not-import-business-or-source-domains",
+			severity: "error",
+			from: {
+				path: "^src/audit-log/",
+			},
+			to: {
+				path: "^src/(?:accounting-record|import-record|record-import|record-export|record-comparison|dbf|kaktus|taxy|ndjson)/",
+			},
+		},
+		{
+			name: "file-boundaries-do-not-import-record-or-source-domains",
+			severity: "error",
+			from: {
+				path: "^src/file-boundary/",
+			},
+			to: {
+				path: "^src/(?:accounting-record|import-record|record-import|record-export|record-comparison|dbf|kaktus|taxy|ndjson)/",
+			},
+		},
+		{
+			name: "append-and-text-primitives-stay-foundational",
+			severity: "error",
+			from: {
+				path: "^src/(?:file-append|text-output)/",
+			},
+			to: {
+				path: "^src/",
+				pathNot: "^src/(?:file-append|text-output)/",
 			},
 		},
 		{

@@ -1,4 +1,6 @@
-import { Cause, Effect, Stream } from "effect";
+import { formatCauseFn } from "~/text-output/fn/formatCauseFn";
+import { formatProblemFn } from "~/record-validation/fn/formatProblemFn";
+import { Effect, Stream } from "effect";
 import { IntermediateRecordSchema } from "~/import-record/schema/IntermediateRecordSchema";
 import type { RecordSchema } from "~/accounting-record/schema/RecordSchema";
 import { validateRecordFx } from "~/accounting-record/fx/validateRecordFx";
@@ -12,7 +14,7 @@ import { ExportOptionsSchema } from "~/record-export/schema/ExportOptionsSchema"
 import { encodeRecordFx } from "~/record-export/fx/encodeRecordFx";
 import type { PublicationOptionsSchema } from "~/file-publication/schema/PublicationOptionsSchema";
 import type { CandidateSchema } from "../schema/CandidateSchema";
-import type { ImportSummarySchema } from "../schema/ImportSummarySchema";
+import type { ImportResultSchema } from "../schema/ImportResultSchema";
 import { ImportRejectedError } from "../error/ImportRejectedError";
 
 interface Props<E, R> {
@@ -67,7 +69,7 @@ export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 				.writeFx({
 					operation,
 					phase: "failed",
-					message: JSON.stringify(problem),
+					message: formatProblemFn(problem),
 				})
 				.pipe(
 					// Preserve the actual rejection if its diagnostic cannot be written.
@@ -145,7 +147,7 @@ export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 				.writeFx({
 					operation,
 					phase: "failed",
-					message: Cause.pretty(cause),
+					message: formatCauseFn(cause),
 				})
 				.pipe(Effect.ignore),
 		),
@@ -162,5 +164,5 @@ export const importRecordsFx = Effect.fn("importRecordsFx")(function* <E, R>({
 		format: exportOptions.format,
 		publication,
 		log: log.path,
-	} satisfies ImportSummarySchema.Type;
+	} satisfies ImportResultSchema.Type;
 });

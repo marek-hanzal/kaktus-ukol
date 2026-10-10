@@ -1,5 +1,5 @@
-import type { EventSchema } from "../schema/EventSchema";
-
-/** One physical log line per event, even when untrusted text contains newlines. */
-export const formatEventFn = (event: EventSchema.Type): string =>
-	`[${event.phase}] ${event.operation}: ${event.message}`.replace(/[\r\n\u2028\u2029]/g, " ");
+import type { EntrySchema } from "../schema/EntrySchema";
+import { escapeLineFn } from "~/text-output/fn/escapeLineFn";
+/** The canonical entry is independent of this human text printer. */
+export const formatEventFn = (entry: EntrySchema.Type): string =>
+	`${entry.timestamp} [${entry.phase}] ${escapeLineFn(entry.operation)}: ${escapeLineFn(entry.message)}`;

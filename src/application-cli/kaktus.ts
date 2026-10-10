@@ -7,10 +7,14 @@ import { SchemaCommand } from "./command/SchemaCommand";
 import { ImportIntermediateCommand } from "./command/ImportIntermediateCommand";
 import { FileProcessingLogLayer } from "~/processing-log/layer/FileProcessingLogLayer";
 
+import { CompareRecordCommand } from "./command/CompareRecordCommand";
+import { FileAuditLogLayer } from "~/audit-log/layer/FileAuditLogLayer";
+
 const KaktusCommand = Command.make("kaktus").pipe(
 	Command.withSubcommands([
 		SchemaCommand,
 		ImportIntermediateCommand,
+		CompareRecordCommand,
 	]),
 	Command.withDescription("Local TAXY/Kaktus connector."),
 );
@@ -19,6 +23,10 @@ const KaktusCommand = Command.make("kaktus").pipe(
 Command.run(KaktusCommand, {
 	version,
 }).pipe(
-	Effect.provide(FileProcessingLogLayer.pipe(Layer.provideMerge(NodeServices.layer))),
+	Effect.provide(
+		Layer.mergeAll(FileProcessingLogLayer, FileAuditLogLayer).pipe(
+			Layer.provideMerge(NodeServices.layer),
+		),
+	),
 	NodeRuntime.runMain,
 );

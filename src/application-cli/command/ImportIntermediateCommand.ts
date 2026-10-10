@@ -1,5 +1,6 @@
 import { Argument, Command, Flag } from "effect/cli";
 import { Console, Effect } from "effect";
+import { formatImportSummaryFn } from "~/record-import/fn/formatImportSummaryFn";
 import { importIntermediateFx } from "~/record-import/fx/importIntermediateFx";
 import type { ImportOptionsSchema } from "~/record-import/schema/ImportOptionsSchema";
 import { FormatEnumSchema } from "~/record-export/schema/FormatEnumSchema";
@@ -8,7 +9,7 @@ const runImportIntermediateCommandFx = Effect.fn("runImportIntermediateCommandFx
 	options: ImportOptionsSchema.Type,
 ) {
 	const summary = yield* importIntermediateFx(options);
-	yield* Console.log(JSON.stringify(summary));
+	yield* Console.log(formatImportSummaryFn(summary));
 });
 
 /** Intermediate NDJSON is a supported input in its own right. */
@@ -16,6 +17,9 @@ export const ImportIntermediateCommand = Command.make(
 	"import-intermediate",
 	{
 		input: Argument.String("input"),
+		actor: Flag.String("actor").pipe(
+			Flag.withDescription("Caller-declared identity for the audit log."),
+		),
 		output: Flag.String("output").pipe(Flag.withDefault(".out/import.ndjson")),
 		outputFormat: Flag.ChoiceWithValue("output-format", [
 			[

@@ -4,6 +4,7 @@ import { ProcessingLog } from "../service/ProcessingLog";
 import { ProcessingLogError } from "../error/ProcessingLogError";
 import type { EventSchema } from "../schema/EventSchema";
 import { LogOptionsSchema } from "../schema/LogOptionsSchema";
+import { appendEntryFx } from "~/file-append/fx/appendEntryFx";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
 
 /** Serialize, append and synchronize each event; help alone never creates a log file. */
@@ -23,40 +24,22 @@ export const FileProcessingLogLayer = Layer.effect(
 		);
 		const output = path.resolve(options.path);
 		const mutex = yield* Semaphore.make(1);
-		const encoder = new TextEncoder();
 
 		return {
 			path: output,
 			writeFx: Effect.fnUntraced(function* (
 				event: EventSchema.Type,
 			): Effect.fn.Return<void, ProcessingLogError> {
-				yield* mutex.withPermits(1)(
-					Effect.scoped(
-						Effect.gen(function* () {
-							const now = yield* Clock.currentTimeMillis;
-							const bytes = encoder.encode(
-								`${new Date(now).toISOString()} ${formatEventFn(event)}\n`,
-							);
-							if (bytes.byteLength > options.maxEventBytes) {
-								return yield* Effect.fail(
-									new ProcessingLogError({
-										path: output,
-										cause: new RangeError(
-											`Log event exceeds ${options.maxEventBytes} bytes.`,
-										),
-									}),
-								);
-							}
-							yield* fileSystem.makeDirectory(path.dirname(output), {
-								recursive: true,
-							});
-							const file = yield* fileSystem.open(output, {
-								flag: "a",
-							});
-							yield* file.writeAll(bytes);
-							yield* file.sync;
-						}),
-					).pipe(
+				const now = yield* Clock.currentTimeMillis;
+				const text = `${formatEventFn({
+					...event,
+					timestamp: new Date(now).toISOString(),
+				})}\n`;
+				yield* mutex
+					.withPermits(1)(appendEntryFx(output, text, options.maxEventBytes))
+					.pipe(
+						Effect.provideService(FileSystem.FileSystem, fileSystem),
+						Effect.provideService(Path.Path, path),
 						Effect.mapError(
 							(cause) =>
 								new ProcessingLogError({
@@ -64,8 +47,7 @@ export const FileProcessingLogLayer = Layer.effect(
 									cause,
 								}),
 						),
-					),
-				);
+					);
 			}),
 		} satisfies ProcessingLog;
 	}),

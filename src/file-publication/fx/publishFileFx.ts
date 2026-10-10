@@ -4,6 +4,8 @@ import { PublicationOptionsSchema } from "../schema/PublicationOptionsSchema";
 import { ChunkTooLargeError } from "../error/ChunkTooLargeError";
 import { PublicationTargetConflictError } from "../error/PublicationTargetConflictError";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
+import { AuditLog } from "~/audit-log/service/AuditLog";
+import { canonicalPathFx } from "~/file-boundary/fx/canonicalPathFx";
 import { ProcessingLog } from "~/processing-log/service/ProcessingLog";
 
 interface Props<E, R> {
@@ -28,12 +30,17 @@ export const publishFileFx = Effect.fn("publishFileFx")(function* <E, R>({
 	const fileSystem = yield* FileSystem.FileSystem;
 	const path = yield* Path.Path;
 	const log = yield* ProcessingLog;
+	const audit = yield* AuditLog;
 	const output = path.resolve(options.output);
 	const parent = path.dirname(output);
 	const operation = "file-publication";
 
 	// Conservatively reject case variants on every host so the contract is portable to Windows.
-	if (output.toLowerCase() === log.path.toLowerCase()) {
+	const canonical = (yield* canonicalPathFx(output)).toLowerCase();
+	if (
+		canonical === (yield* canonicalPathFx(log.path)).toLowerCase() ||
+		canonical === (yield* canonicalPathFx(audit.path)).toLowerCase()
+	) {
 		return yield* Effect.fail(
 			new PublicationTargetConflictError({
 				path: output,

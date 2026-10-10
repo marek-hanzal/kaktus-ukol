@@ -1,8 +1,8 @@
 import { Effect, Path } from "effect";
-import { ProcessingLog } from "~/processing-log/service/ProcessingLog";
+import { runAuditedFx } from "~/audit-log/fx/runAuditedFx";
+import { checkDataPathsFx } from "~/file-boundary/fx/checkDataPathsFx";
 import { parseRecordFx } from "~/record-validation/fx/parseRecordFx";
 import { ImportOptionsSchema } from "../schema/ImportOptionsSchema";
-import { InputPathConflictError } from "../error/InputPathConflictError";
 import { readIntermediateStream } from "../stream/readIntermediateStream";
 import { importRecordsFx } from "./importRecordsFx";
 
@@ -16,35 +16,41 @@ export const importIntermediateFx = Effect.fn("importIntermediateFx")(function* 
 		"intermediate import options",
 	);
 	const path = yield* Path.Path;
-	const log = yield* ProcessingLog;
 	const input = path.resolve(options.input);
 	const output = path.resolve(options.output);
-	for (const conflict of [
+	yield* checkDataPathsFx(
+		[
+			input,
+		],
 		output,
-		log.path,
-	]) {
-		if (input.toLowerCase() === conflict.toLowerCase()) {
-			return yield* Effect.fail(
-				new InputPathConflictError({
-					input,
-					conflict,
-				}),
-			);
-		}
-	}
-	return yield* importRecordsFx({
-		records: readIntermediateStream({
-			path: input,
-			maxRecordBytes: options.maxRecordBytes,
-			chunkBytes: 16 * 1024,
-		}),
-		publication: {
+	);
+	const audited = yield* runAuditedFx(
+		{
+			actor: options.actor,
+			action: "import_intermediate",
+			inputs: [
+				input,
+			],
 			output,
-			maxChunkBytes: options.maxOutputRecordBytes + 1,
 		},
-		exportOptions: {
-			format: options.outputFormat,
-			maxRecordBytes: options.maxOutputRecordBytes,
-		},
-	});
+		importRecordsFx({
+			records: readIntermediateStream({
+				path: input,
+				maxRecordBytes: options.maxRecordBytes,
+				chunkBytes: 16 * 1024,
+			}),
+			publication: {
+				output,
+				maxChunkBytes: options.maxOutputRecordBytes + 1,
+			},
+			exportOptions: {
+				format: options.outputFormat,
+				maxRecordBytes: options.maxOutputRecordBytes,
+			},
+		}),
+	);
+	return {
+		...audited.result,
+		audit: audited.audit,
+	};
 });

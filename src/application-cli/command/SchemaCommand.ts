@@ -17,6 +17,9 @@ import { ImportSummarySchema } from "~/record-import/schema/ImportSummarySchema"
 import { IntermediateOutputSchema } from "~/record-export/schema/IntermediateOutputSchema";
 import { publishFileFx } from "~/file-publication/fx/publishFileFx";
 
+import { DifferenceSchema } from "~/record-comparison/schema/DifferenceSchema";
+import { EntrySchema as AuditEntrySchema } from "~/audit-log/schema/EntrySchema";
+
 const runSchemaCommandFx = Effect.fn("runSchemaCommandFx")(function* ({
 	schema,
 	output,
@@ -47,6 +50,14 @@ export const SchemaCommand = Command.make(
 	"schema",
 	{
 		schema: Argument.ChoiceWithValue("contract", [
+			[
+				"record-difference",
+				DifferenceSchema,
+			],
+			[
+				"audit-entry",
+				AuditEntrySchema,
+			],
 			[
 				"taxy-import-invoice",
 				ImportInvoiceSchema,
